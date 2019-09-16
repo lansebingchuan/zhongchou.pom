@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+	
+	
+	<!-- 启用注解功能 -->
+	<context:annotation-config />
+	
+<!-- use-default-filters="false" 表示不管service注解，和DAO，管下面的controller,而需要service的时候，去spring容器拿 ，默认为true，管理本包下面的所有service和DAO-->
+	<context:component-scan base-package="com.aisouji.*" use-default-filters="false">
+	<!-- 包含扫描这个Controller注解 -->
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+	
+	<!-- 字符串字符编码转换 -->
+	<bean
+		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="messageConverters">
+			<list>
+				<bean
+					class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter">
+					<property name="supportedMediaTypes">
+						<list><!-- 主要是服务器端返回给客服端的JSON数据的编码 -->
+							<value>application/json;charset=UTF-8</value>
+						</list>
+					</property>
+				</bean>
+			</list>
+		</property>
+	</bean>
+
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="viewClass"
+			value="org.springframework.web.servlet.view.JstlView"></property>
+		<property name="prefix" value="/WEB-INF/jsp/"></property>
+		<property name="suffix" value=".html"></property>
+	</bean>
+
+  <bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+    <property name="exceptionAttribute" value="exception"></property>
+		<property name="exceptionMappings">
+			<props>
+				<prop key="java.lang.Exception">error/error</prop>
+				<prop key="com.aisouji.exception.LoginException">login</prop>
+				<prop key="com.aisouji.exception.MemberException">login</prop>
+			</props>
+		</property>
+	</bean> 
+<!-- 解析文件的上传 -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver" p:defaultEncoding="UTF-8">
+		<property name="maxUploadSize" value="2097152" /><!-- 最大文件大小 -->
+		<property name="resolveLazily" value="true" />
+	</bean>
+	
+<mvc:interceptors>
+	 <bean id="loginInterceptor" class="com.aisouji.manager.interceptor.LoginInterceptor"></bean><!-- 登录拦截器 -->
+	 <bean id="permissionInterceptor" class="com.aisouji.manager.interceptor.PermissionInterceptor"></bean><!-- 登录之后的权限拦截器 -->
+	</mvc:interceptors> 
+</beans>

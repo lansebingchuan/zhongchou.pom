@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aisouji.manager.dao.UserMapper" >
+  <resultMap id="BaseResultMap" type="com.aisouji.bean.User" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="loginacct" property="loginacct" jdbcType="VARCHAR" />
+    <result column="userpswd" property="userpswd" jdbcType="CHAR" />
+    <result column="username" property="username" jdbcType="VARCHAR" />
+    <result column="email" property="email" jdbcType="VARCHAR" />
+    <result column="createtime" property="createtime" jdbcType="CHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, loginacct, userpswd, username, email, createtime
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    id, loginacct, username, email
+    from t_user
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="getPermissionsById" resultType="Permission" parameterType="java.lang.Integer" >
+    SELECT DISTINCT t_permission.* FROM t_permission , t_role_permission , t_role , t_user_role , t_user 
+		WHERE
+		t_user.id=#{id}
+		AND t_user.id = t_user_role.userid
+		AND t_role.id = t_user_role.roleid
+		AND t_permission.id = t_role_permission.permissionid
+		AND t_role.id = t_role_permission.roleid
+		ORDER BY t_permission.id
+  </select>
+<!--   <select id="queryCount" resultType="java.lang.Integer" >
+    select count(*)
+    from t_user
+  </select>
+    <select id="queryPages" resultMap="BaseResultMap" >
+    select 
+      id, loginacct, username, email
+    from t_user limit #{pagePoint} , #{pageSize}
+  </select> -->
+  <select id="queryCount" resultType="java.lang.Integer" parameterType="map">
+    select count(*)
+    from t_user
+    <where>
+      <if test="queryText!=null">loginacct like concat("%",#{queryText} ,"%")</if>
+    </where>
+  </select>
+  <select id="getAllRole" resultType="Role"><!-- 获取t_role表中的所有权限 -->
+    select id ,name from t_role
+  </select>
+  <select id="getIdRoles" resultType="int" parameterType="int"><!-- 获取t_role表中的所有权限 -->
+    select roleid from t_user_role where userid=#{id};
+  </select>
+    <select id="queryPages" resultMap="BaseResultMap" parameterType="map">
+    select 
+      id, loginacct, username, email
+      from t_user 
+      <where>
+          <if test="queryText!=null">loginacct like concat("%",#{queryText} ,"%")</if>
+      </where>
+      order by createtime desc
+      limit #{startIndex} , #{pageSize}
+  </select>
+                <!-- 传入参数，，                                    返回类型 -->
+    <select id="queryUserLogin" resultMap="BaseResultMap"  parameterType="map" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_user
+    where loginacct = #{loginacct} and userpswd = #{userpswd}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from t_user
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+    <delete id="deleteUserRole">
+     delete from t_user_role where userid=#{id} and roleid in
+     <foreach collection="ids" item="roleid" separator="," open="(" close=")">
+          #{roleid}
+     </foreach>    
+  </delete>
+      <!--  delete from t_user where id in (1,2,3)  collection="userlist"工具类里面的属性名字-->
+  <delete id="deleteUserList">
+    delete from t_user where id in
+    <foreach collection="userlist" open="(" close=")" separator="," item="user">
+        #{user.id}
+    </foreach>
+  </delete>
+  <delete id="deleteUserList_list"><!-- 传入的是一个list对象   collection="list"-->
+    delete from t_user where id in
+    <foreach collection="list" open="(" close=")" separator="," item="user">
+        #{user.id}
+    </foreach>
+  </delete>
+  <insert id="insert" parameterType="com.aisouji.bean.User" >
+    insert into t_user (id, loginacct, userpswd, 
+      username, email, createtime
+      )
+    values (#{id,jdbcType=INTEGER}, #{loginacct,jdbcType=VARCHAR}, #{userpswd,jdbcType=CHAR}, 
+      #{username,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR}, #{createtime,jdbcType=CHAR}
+      )
+  </insert>
+  <insert id="addUserRole"><!-- 增加用户权限 -->
+    <foreach collection="ids" item="roleid" separator=";">
+        insert into t_user_role (userid , roleid) values (#{id} , #{roleid})
+    </foreach>
+  </insert>
+  <insert id="insertSelective" parameterType="com.aisouji.bean.User" useGeneratedKeys="true" keyProperty="id">
+    insert into t_user
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="loginacct != null" >
+        loginacct,
+      </if>
+      <if test="userpswd != null" >
+        userpswd,
+      </if>
+      <if test="username != null" >
+        username,
+      </if>
+      <if test="email != null" >
+        email,
+      </if>
+      <if test="createtime != null" >
+        createtime,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="loginacct != null" >
+        #{loginacct,jdbcType=VARCHAR},
+      </if>
+      <if test="userpswd != null" >
+        #{userpswd,jdbcType=CHAR},
+      </if>
+      <if test="username != null" >
+        #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="email != null" >
+        #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null" >
+        #{createtime,jdbcType=CHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.aisouji.bean.User" >
+    update t_user
+    <set >
+      <if test="loginacct != null" >
+        loginacct = #{loginacct,jdbcType=VARCHAR},
+      </if>
+      <if test="userpswd != null" >
+        userpswd = #{userpswd,jdbcType=CHAR},
+      </if>
+      <if test="username != null" >
+        username = #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="email != null" >
+        email = #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null" >
+        createtime = #{createtime,jdbcType=CHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.aisouji.bean.User" >
+    update t_user
+    set loginacct = #{loginacct,jdbcType=VARCHAR},
+      userpswd = #{userpswd,jdbcType=CHAR},
+      username = #{username,jdbcType=VARCHAR},
+      email = #{email,jdbcType=VARCHAR},
+      createtime = #{createtime,jdbcType=CHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aisouji.potal.dao.MemberProjectTicketMapper" >
+  <resultMap id="BaseResultMap" type="com.aisouji.bean.MemberProjectTicket" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="memberid" property="memberid" jdbcType="INTEGER" />
+    <result column="projectid" property="projectid" jdbcType="INTEGER" />
+    <result column="proinstid" property="proinstid" jdbcType="VARCHAR" />
+    <result column="autocode" property="autocode" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="CHAR" />
+    <result column="currenturl" property="currenturl" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, memberid, projectid ,proinstid, autocode, status, currenturl
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_member_project_ticket
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="getProjectTickeByMemberId" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_member_project_ticket
+    where memberid = #{memberid}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from t_member_project_ticket
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.aisouji.bean.MemberProjectTicket" >
+    insert into t_member_project_ticket (id, memberid, proinstid, projectid,
+      autocode, status, currenturl
+      )
+    values (#{id,jdbcType=INTEGER}, #{memberid,jdbcType=INTEGER}, #{proinstid,jdbcType=VARCHAR}, 
+     #{projectid,jdbcType=INTEGER}, #{autocode,jdbcType=VARCHAR}, #{status,jdbcType=CHAR}, #{currenturl,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.aisouji.bean.MemberProjectTicket" >
+    insert into t_member_project_ticket
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="memberid != null" >
+        memberid,
+      </if>
+      <if test="proinstid != null" >
+        proinstid,
+      </if>
+      <if test="autocode != null" >
+        autocode,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="currenturl != null" >
+        currenturl,
+      </if>
+      <if test="projectid != null" >
+        projectid,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="memberid != null" >
+        #{memberid,jdbcType=INTEGER},
+      </if>
+      <if test="proinstid != null" >
+        #{proinstid,jdbcType=VARCHAR},
+      </if>
+      <if test="autocode != null" >
+        #{autocode,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=CHAR},
+      </if>
+      <if test="currenturl != null" >
+        #{currenturl,jdbcType=VARCHAR},
+      </if>
+      <if test="projectid != null" >
+        #{projectid,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.aisouji.bean.MemberProjectTicket" >
+    update t_member_project_ticket
+    <set >
+      <if test="memberid != null" >
+        memberid = #{memberid,jdbcType=INTEGER},
+      </if>
+      <if test="proinstid != null" >
+        proinstid = #{proinstid,jdbcType=VARCHAR},
+      </if>
+      <if test="autocode != null" >
+        autocode = #{autocode,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=CHAR},
+      </if>
+      <if test="currenturl != null" >
+        currenturl = #{currenturl,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.aisouji.bean.MemberProjectTicket" >
+    update t_member_project_ticket
+    set memberid = #{memberid,jdbcType=INTEGER},
+      proinstid = #{proinstid,jdbcType=VARCHAR},
+      autocode = #{autocode,jdbcType=VARCHAR},
+      status = #{status,jdbcType=CHAR},
+      currenturl = #{currenturl,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateCurrenUrlByMemberId">
+    update t_member_project_ticket
+    set 
+      currenturl = #{currenturl}
+    where memberid = #{memberid}
+  </update>
+</mapper>

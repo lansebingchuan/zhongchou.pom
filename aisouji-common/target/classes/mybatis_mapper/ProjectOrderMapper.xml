@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aisouji.common.dao.ProjectOrderMapper" >
+  <resultMap id="BaseResultMap" type="com.aisouji.bean.ProjectOrder" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="memberid" property="memberid" jdbcType="INTEGER" />
+    <result column="projectid" property="projectid" jdbcType="INTEGER" />
+    <result column="ordernumber" property="ordernumber" jdbcType="VARCHAR" />
+    <result column="serialnumber" property="serialnumber" jdbcType="VARCHAR" />
+    <result column="totalmoney" property="totalmoney" jdbcType="INTEGER" />
+    <result column="creatdate" property="creatdate" jdbcType="VARCHAR" />
+    <result column="enddate" property="enddate" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, memberid, projectid, ordernumber, serialnumber, totalmoney, creatdate, enddate
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_project_order
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="getProjectOrderMessageByOrderNumber" resultType="map" parameterType="java.lang.String" >
+    SELECT
+  m.realname ,p.`name` AS projectname ,po.ordernumber ,po.serialnumber,p.createdate ,po.totalmoney
+	FROM
+	  t_project AS p,
+	  t_project_order AS po,
+	  t_member AS m
+	WHERE
+	  po.ordernumber=#{orderNumber} AND p.id = po.projectid AND m.id = po.memberid
+  </select>
+  <select id="getProjectOrderByOrderNumber" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_project_order
+    where ordernumber = #{orderNumber}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from t_project_order
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.aisouji.bean.ProjectOrder" >
+    insert into t_project_order (id, memberid, projectid, 
+      ordernumber, serialnumber, totalmoney, 
+      creatdate, enddate)
+    values (#{id,jdbcType=INTEGER}, #{memberid,jdbcType=INTEGER}, #{projectid,jdbcType=INTEGER}, 
+      #{ordernumber,jdbcType=VARCHAR}, #{serialnumber,jdbcType=VARCHAR}, #{totalmoney,jdbcType=INTEGER}, 
+      #{creatdate,jdbcType=VARCHAR}, #{enddate,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.aisouji.bean.ProjectOrder" >
+    insert into t_project_order
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="memberid != null" >
+        memberid,
+      </if>
+      <if test="projectid != null" >
+        projectid,
+      </if>
+      <if test="ordernumber != null" >
+        ordernumber,
+      </if>
+      <if test="serialnumber != null" >
+        serialnumber,
+      </if>
+      <if test="totalmoney != null" >
+        totalmoney,
+      </if>
+      <if test="creatdate != null" >
+        creatdate,
+      </if>
+      <if test="enddate != null" >
+        enddate,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="memberid != null" >
+        #{memberid,jdbcType=INTEGER},
+      </if>
+      <if test="projectid != null" >
+        #{projectid,jdbcType=INTEGER},
+      </if>
+      <if test="ordernumber != null" >
+        #{ordernumber,jdbcType=VARCHAR},
+      </if>
+      <if test="serialnumber != null" >
+        #{serialnumber,jdbcType=VARCHAR},
+      </if>
+      <if test="totalmoney != null" >
+        #{totalmoney,jdbcType=INTEGER},
+      </if>
+      <if test="creatdate != null" >
+        #{creatdate,jdbcType=VARCHAR},
+      </if>
+      <if test="enddate != null" >
+        #{enddate,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.aisouji.bean.ProjectOrder" >
+    update t_project_order
+    <set >
+      <if test="memberid != null" >
+        memberid = #{memberid,jdbcType=INTEGER},
+      </if>
+      <if test="projectid != null" >
+        projectid = #{projectid,jdbcType=INTEGER},
+      </if>
+      <if test="ordernumber != null" >
+        ordernumber = #{ordernumber,jdbcType=VARCHAR},
+      </if>
+      <if test="serialnumber != null" >
+        serialnumber = #{serialnumber,jdbcType=VARCHAR},
+      </if>
+      <if test="totalmoney != null" >
+        totalmoney = #{totalmoney,jdbcType=INTEGER},
+      </if>
+      <if test="creatdate != null" >
+        creatdate = #{creatdate,jdbcType=VARCHAR},
+      </if>
+      <if test="enddate != null" >
+        enddate = #{enddate,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.aisouji.bean.ProjectOrder" >
+    update t_project_order
+    set memberid = #{memberid,jdbcType=INTEGER},
+      projectid = #{projectid,jdbcType=INTEGER},
+      ordernumber = #{ordernumber,jdbcType=VARCHAR},
+      serialnumber = #{serialnumber,jdbcType=VARCHAR},
+      totalmoney = #{totalmoney,jdbcType=INTEGER},
+      creatdate = #{creatdate,jdbcType=VARCHAR},
+      enddate = #{enddate,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateProjectOrderByOrderNumber" parameterType="com.aisouji.bean.ProjectOrder" >
+    update t_project_order
+    <set >
+      <if test="memberid != null" >
+        memberid = #{memberid,jdbcType=INTEGER},
+      </if>
+      <if test="projectid != null" >
+        projectid = #{projectid,jdbcType=INTEGER},
+      </if>
+      <if test="ordernumber != null" >
+        ordernumber = #{ordernumber,jdbcType=VARCHAR},
+      </if>
+      <if test="serialnumber != null" >
+        serialnumber = #{serialnumber,jdbcType=VARCHAR},
+      </if>
+      <if test="totalmoney != null" >
+        totalmoney = #{totalmoney,jdbcType=INTEGER},
+      </if>
+      <if test="creatdate != null" >
+        creatdate = #{creatdate,jdbcType=VARCHAR},
+      </if>
+      <if test="enddate != null" >
+        enddate = #{enddate,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ordernumber = #{ordernumber,jdbcType=INTEGER}
+  </update>
+</mapper>

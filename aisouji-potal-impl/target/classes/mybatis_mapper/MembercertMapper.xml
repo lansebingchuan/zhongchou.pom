@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aisouji.potal.dao.MembercertMapper" >
+  <resultMap id="BaseResultMap" type="com.aisouji.bean.Membercert" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="memberid" property="memberid" jdbcType="INTEGER" />
+    <result column="certid" property="certid" jdbcType="INTEGER" />
+    <result column="iconpath" property="iconpath" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, memberid, certid, iconpath
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_member_cert
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from t_member_cert
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.aisouji.bean.Membercert" >
+    insert into t_member_cert (id, memberid, certid, 
+      iconpath)
+    values (#{id,jdbcType=INTEGER}, #{memberid,jdbcType=INTEGER}, #{certid,jdbcType=INTEGER}, 
+      #{iconpath,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertMembercert">
+    <foreach collection="list" item="membercert" separator=";">
+	    insert into t_member_cert (memberid, certid, 
+	      iconpath)
+	    values (#{membercert.memberid}, #{membercert.certid}, 
+	      #{membercert.iconpath})
+   </foreach>
+  </insert>
+  <insert id="insertSelective" parameterType="com.aisouji.bean.Membercert" >
+    insert into t_member_cert
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="memberid != null" >
+        memberid,
+      </if>
+      <if test="certid != null" >
+        certid,
+      </if>
+      <if test="iconpath != null" >
+        iconpath,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="memberid != null" >
+        #{memberid,jdbcType=INTEGER},
+      </if>
+      <if test="certid != null" >
+        #{certid,jdbcType=INTEGER},
+      </if>
+      <if test="iconpath != null" >
+        #{iconpath,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.aisouji.bean.Membercert" >
+    update t_member_cert
+    <set >
+      <if test="memberid != null" >
+        memberid = #{memberid,jdbcType=INTEGER},
+      </if>
+      <if test="certid != null" >
+        certid = #{certid,jdbcType=INTEGER},
+      </if>
+      <if test="iconpath != null" >
+        iconpath = #{iconpath,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.aisouji.bean.Membercert" >
+    update t_member_cert
+    set memberid = #{memberid,jdbcType=INTEGER},
+      certid = #{certid,jdbcType=INTEGER},
+      iconpath = #{iconpath,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>
