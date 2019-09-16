@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keys" content="">
+    <meta name="author" content="">
+	<link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link rel="stylesheet" href="css/login.css">
+	<style>
+
+	</style>
+  </head>
+  <body onload="createCode()">
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <div><a class="navbar-brand" href="index.html" style="font-size:32px;">尚筹网-创意产品众筹平台</a></div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+
+      <form id="loginForm"  class="form-signin" role="form">
+        <h2 class="form-signin-heading"><i class="glyphicon glyphicon-log-in"></i> 用户登录</h2>
+		  <div class="form-group has-success has-feedback">
+			<input name="loginacct" type="text" class="form-control" id="loginacct" value="zht123" placeholder="请输入登录账号" autofocus>
+			<span class="glyphicon glyphicon-user form-control-feedback"></span>
+		  </div>
+		  <div class="form-group has-success has-feedback">
+			<input name="userpswd" type="password" class="form-control" id="userpswd" value="123" placeholder="请输入登录密码" style="margin-top:10px;">
+			<span class="glyphicon glyphicon-lock form-control-feedback"></span>
+		  </div>
+		  <div class="form-group has-success has-feedback">
+			      <select class="form-control" name="type" id="type">
+                <option value="member">会员</option>
+                <option value="user">管理</option>
+            </select>
+		  </div>
+		  <div class="input">
+   <input id="t1" type="text" name="u" placeholder="验证码" onblur="but()" />
+   <span id="discode"></span>
+   <input type="button" value="换一换" class="btn btn-info btn-sm" onClick="createCode()">
+   </div>
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" value="1" name="rememberme"> 记住我
+          </label>
+          <br>
+          <label>
+                                                  忘记密码
+          </label>
+          <label style="float:right">
+            <a href="/reg.htm">我要注册</a>
+          </label>
+        </div>
+        <a class="btn btn-lg btn-success btn-block" onclick="dologin()" > 登录</a>
+      </form>
+    </div>
+    <script src="jquery/jquery-2.1.1.min.js"></script>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/jquery/layer/layer.js"></script>
+    <script>
+		    var code; //在全局 定义验证码
+		    function createCode()
+		    { //创建验证码函数
+		     code = "";
+		     var codeLength =4;//验证码的长度
+		     var selectChar = new Array(0,1,2,3,4,5,6,7,8,9,'a','b','c','d','e','f','g','h','i','j','k',
+		      'l','m','n','o','p','q','r','s','t','u','v','w','x','y','z');//所有候选组成验证码的字符，当然也可以用中文的
+		     for(var i=0;i<codeLength;i++)
+		     { 
+		     var charIndex =Math.floor(Math.random()*36);
+		     code +=selectChar[charIndex]; 
+		     }
+		    // 设置验证码的显示样式，并显示
+		     document.getElementById("discode").style.fontFamily="Fixedsys"; //设置字体
+		     document.getElementById("discode").style.letterSpacing="4.5px"; //字体间距
+		     document.getElementById("discode").style.color="#0ab000"; //字体颜色
+		     document.getElementById("discode").innerHTML=code; // 显示
+		    }
+		    var t1 = $("#t1");
+		    function but()
+		    {//验证验证码输入是否正确
+		     var val1=document.getElementById("t1").value;
+		     var val2=code;
+		     if(val1!=val2){
+               layer.msg("请输入正确验证码", {time:1000, icon:5, shift:6}, function(){
+                   t1.val("");
+                   });
+               return true;
+		      }
+		     }
+		    function dologin() {
+		    /* 	$("#loginForm").submit(); */
+		   /*  使用 ajax 请求发送表单数据 */
+		    var loginacct = $("#loginacct");
+		    var userpswd = $("#userpswd");
+		    if ($.trim(loginacct.val()) == "") {
+		    	  /* alert("请输入登录名"); */
+		    	  layer.msg("请输入登录名", {time:1000, icon:5, shift:6}, function(){
+		    		  loginacct.focus();
+		    	        loginacct.val("");
+		    	  });
+		    	  return;
+		    	  }
+		    if ($.trim(userpswd.val()) == "") {
+		        layer.msg("请输入登录密码", {time:1000, icon:5, shift:6}, function(){
+		            userpswd.focus();
+		            userpswd.val("");
+		          });
+		        return;
+		        }
+		      if (but()) {
+				return;
+			};
+		    	$.post("/dologin.do", $("#loginForm").serialize(),function(data){
+		    		   if (data == true) {//登录成功
+		    			   if ($("#type").val() == "user") {//管理员登录
+		    				   window.location.href="/main.htm";
+						     }else {//会员登录
+						    	 window.location.href="/member.htm";
+							   }
+		    			   
+					      }else {
+					    	  layer.msg("登录错误，用户名或者密码错误", {time:1000, icon:5, shift:6});
+						 }
+		    	 }).error(function() { 
+		/*     		 alert("登录错误，用户名或者密码错误"); *//* 弹窗组件 */
+		    		 layer.msg("登录错误，用户名或者密码错误", {time:1000, icon:5, shift:6});
+		    		});
+		      /*   var type = $(":selected").val();
+		        if ( type == "user" ) {
+		            window.location.href = "main.html";
+		        } else {
+		            window.location.href = "index.html";
+		        } */
+		    }
+		/*     $(document).ajaxError(function(event,xhr,options,exc){
+		    	console.log(event);console.log(xhr);console.log(options);console.log(exc);
+		    	console.log(xhr.status);
+		    });  */
+    </script>
+  </body>
+</html>

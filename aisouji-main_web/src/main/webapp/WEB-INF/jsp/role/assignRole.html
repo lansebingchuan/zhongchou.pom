@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+	<link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+	<link rel="stylesheet" href="../css/main.css">
+	<link rel="stylesheet" href="../css/doc.min.css">
+	<style>
+	.tree li {
+        list-style-type: none;
+		cursor:pointer;
+	}
+	</style>
+  <script src="/jquery/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="/script/user.js"></script>
+  </head>
+
+  <body>
+
+   <nav id="fixed-top" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <script type="text/javascript" src="/script/top.js"></script><!-- //加载TOP页面 -->
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+			 <div class="tree" id="tree">
+        <script type="text/javascript" src="/script/left.js"></script><!-- //加载left页面 -->
+      </div>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+				<ol class="breadcrumb">
+				  <li><a href="#">首页</a></li>
+				  <li><a href="#">数据列表</a></li>
+				  <li class="active">分配角色</li>
+				</ol>
+			<div class="panel panel-default">
+			  <div class="panel-body">
+				<form role="form" class="form-inline">
+				  <div class="form-group">
+					<label for="exampleInputPassword1">未分配角色列表</label><br>
+						<select id="leftRoleList" class="form-control" multiple size="10" style="width:190px;overflow-y:auto;">
+	                
+	           </select>
+				  </div>
+				  <div class="form-group">
+                        <ul>
+                            <li id="rightbtn" class="btn btn-default glyphicon glyphicon-chevron-right"></li>
+                            <br>
+                            <li id="lefttbtn" class="btn btn-default glyphicon glyphicon-chevron-left" style="margin-top:20px;"></li>
+                        </ul>
+				  </div>
+				  <div class="form-group" style="margin-left:40px;">
+					<label for="exampleInputPassword1">已分配角色列表</label><br>
+						<select id="rightRoleList"  class="form-control" multiple size="10" style="width:190px;overflow-y:auto;">
+						
+	           </select>
+				  </div>
+				</form>
+			  </div>
+			</div>
+        </div>
+      </div>
+    </div>
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+			<h4 class="modal-title" id="myModalLabel">帮助</h4>
+		  </div>
+		  <div class="modal-body">
+			<div class="bs-callout bs-callout-info">
+				<h4>测试标题1</h4>
+				<p>测试内容1，测试内容1，测试内容1，测试内容1，测试内容1，测试内容1</p>
+			  </div>
+			<div class="bs-callout bs-callout-info">
+				<h4>测试标题2</h4>
+				<p>测试内容2，测试内容2，测试内容2，测试内容2，测试内容2，测试内容2</p>
+			  </div>
+		  </div>
+		  <!--
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+			<button type="button" class="btn btn-primary">Save changes</button>
+		  </div>
+		  -->
+		</div>
+	  </div>
+	</div>
+    <script src="../jquery/jquery-2.1.1.min.js"></script>
+    <script src="../bootstrap/js/bootstrap.min.js"></script>
+	<script src="../script/docs.min.js"></script>
+	 <script type="text/javascript" src="/jquery/layer/layer.js"></script>
+    <script type="text/javascript">
+        $(function () {
+				 $(".list-group-item").click(function(){
+					    if ( $(this).find("ul") ) {
+							$(this).toggleClass("tree-closed");
+							if ( $(this).hasClass("tree-closed") ) {
+								$("ul", this).hide("fast");
+							} else {
+								$("ul", this).show("fast");
+							}
+						}
+					});
+        });
+        $(updateUserRole());//页面加载完毕之后，加载用户的权限数据
+        function updateUserRole() {
+        	 $.get("/user/initUserRole.do" , function(result) {
+                  console.log(result);
+                  if (!result) {
+                	  layer.msg("参数失效，请重新获取！",{time:1000, icon:5, shift:6});
+                	  }
+                  var leftRoleList = $("#leftRoleList");
+                  var rightRoleList = $("#rightRoleList");
+                  var leftRoles = result.leftRoles;
+                  var rightRoles = result.rightRoles;
+                  for (var i = 0; i < leftRoles.length; i++) {
+                	  var option = $('<option id='+leftRoles[i].id+' value=/"'+leftRoles[i].name+'/">'+leftRoles[i].name+'</option>');
+                	  leftRoleList.append(option);
+                	}
+                  for (var i = 0; i < rightRoles.length; i++) {
+                      var option = $('<option id='+rightRoles[i].id+' value=/"'+rightRoles[i].name+'/">'+rightRoles[i].name+'</option>');
+                      rightRoleList.append(option);
+                  }
+           });
+        }
+        $("#rightbtn").click(function() {//点击选择数据
+        	  var leftOptionSelected = $("#leftRoleList option:selected");
+        	  var rightRoleList = $("#rightRoleList");
+        	  var jsonObject = {};
+        	  
+        	  leftOptionSelected.each(function(n ,value) {
+        		  jsonObject["ids["+n+"]"] = value.id;
+        		});
+        	  $.post("/user/addUserRole.do" , jsonObject ,function(result) {
+        		  if (1 == result) {
+        			  layer.msg("权限修改成功！",{time:1000, icon:6, shift:6});
+        			  rightRoleList.append(leftOptionSelected.clone());
+        	      leftOptionSelected.remove();
+        			  }else if(result == 0){
+        				  layer.msg("请重新获取参数！",{time:1000, icon:5, shift:6});
+        				}else {
+        					layer.msg("请重新获取参数！",{time:1000, icon:5, shift:6});
+        				}
+        		});  
+        });
+        $("#lefttbtn").click(function() {//点击选择数据
+            var rightOptionSelected = $("#rightRoleList option:selected");
+            var leftRoleList = $("#leftRoleList");
+            var jsonObject = {};
+            
+            rightOptionSelected.each(function(n ,value) {
+              jsonObject["ids["+n+"]"] = value.id;
+            });
+            $.post("/user/deleteUserRole.do" , jsonObject ,function(result) {
+                if (1 == result) {
+                  layer.msg("权限移除成功！",{time:1000, icon:6, shift:6});
+                  leftRoleList.append(rightOptionSelected.clone());
+                  rightOptionSelected.remove();
+                  }else if(result == 0){
+                    layer.msg("请重新获取参数！",{time:1000, icon:5, shift:6});
+                  }else {
+                    layer.msg("请重新获取参数！",{time:1000, icon:5, shift:6});
+                  }
+              });
+        });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+<title>支付订单信息</title>
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/theme.css">
+<style>
+  .exlist .row div{
+    margin-top: 10px;
+  }
+  .exlist .row div:first-child{
+    margin-top: 0;
+  }
+  #topcontrol {
+  color: #fff;
+  z-index: 99;
+  width: 30px;
+  height: 30px;
+  font-size: 20px;
+  background: #222;
+  position: relative;
+  right: 14px !important;
+  bottom: 11px !important;
+  border-radius: 3px !important;
+  }
+
+#topcontrol:after {
+  /*top: -2px;*/
+  left: 8.5px;
+  content: "\f106";
+  position: absolute;
+  text-align: center;
+  font-family: FontAwesome;
+}
+
+#topcontrol:hover {
+    color: #fff;
+    background: #18ba9b;
+    -webkit-transition: all 0.3s ease-in-out;
+    -moz-transition: all 0.3s ease-in-out;
+    -o-transition: all 0.3s ease-in-out;
+    transition: all 0.3s ease-in-out;
+}
+  
+</style>
+  <script src="/jquery/jquery-2.1.1.min.js"></script>
+    <script src="/bootstrap/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="/script/member/memberUtils.js"></script><!-- 会员工具箱 -->
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> <!-- vue根需求： -->
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script><!-- ajax请求： -->
+  <link href="/css/lanrenzhijia.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+ <div class="navbar-wrapper">
+      <div class="container">
+       <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation" id="member_top">
+           <script type="text/javascript" src="/script/member/member_top.js"></script>
+        </nav>
+      </div>
+    </div>
+<div class="exlist" id="orderMessage">
+  <div class="exlist_title"><img src="/img/paysuccess/paper-clip.png" /></div>
+  <div id="title">
+    <legend>订单信息</legend>
+  </div>
+  <form method="post" action="">
+    <fieldset>
+    <legend>详细信息</legend>
+    <div class="row" v-if="errorflage">
+      <div><label>1. 支持人姓名:</label> <span>{{orderMessage.realname}}</span></div>
+      <div><label>2. 支持项目:</label> <span>{{orderMessage.projectname}}</span></div>
+      <div><label>3. 订单编号:</label> <span>{{orderMessage.ordernumber}}</span></div>
+      <div><label>4. 订单流水号:</label> <span>{{orderMessage.serialnumber}}</span></div>
+      <div><label>5. 订单日期:</label> <span>{{orderMessage.createdate}}</span></div>
+      <div><label>6. 支付金额:</label> <span>{{orderMessage.totalmoney}}(元)</span></div>
+    </div>
+    <div v-else>
+    <div><label>错误信息:</label> <span>{{errormessage.error}}</span></div>
+    </div>
+    </fieldset>
+  </form>
+</div><!-- //获取地址栏信息工具 -->
+<script src="/script/utils.js"></script>
+<script type="text/javascript" src="/jquery/layer/layer.js"></script>
+<script type="text/javascript">
+ var orderNumber = getUrlId("orderNumber");
+ var orderMessage = new Vue({
+	 el: "#orderMessage",
+	 data:{
+		 orderMessage:'',
+		 errorflage: true,
+		 errormessage:'',
+	 },
+	 methods: {
+		 getProjectOrderByOrderNumber: function() {
+			 if (orderNumber === 0) {//0表示订单不存在
+				 layer.msg("订单不存在，请确认是否操作正确！",{time:2500, icon:5, shift:6});
+				 return;
+			 }
+			 if (orderNumber === 1) {//1 表示订单错误
+				 layer.msg("订单错误，请到会员中心查看是否支付完成！",{time:2500, icon:5, shift:6});
+		     return;
+			 }
+			 axios.get('/pay/getProjectOrderByOrderNumber.do' ,
+         {
+          params: {//参数对象
+        	  orderNumber : orderNumber,
+          }, 
+          responseType: "json",//设置返回类型 stream-图片
+         }
+        ).then(function(response) {
+          var data = response.data;
+          if (data.error) {//存在表示订单错误
+        	  orderMessage.errorflage = false;
+        	  orderMessage.errormessage = data.error;
+        	  layer.msg("项目支持失败！",{time:2500, icon:5, shift:6});
+        	}else {
+        		 orderMessage.orderMessage = data.orderMessage;
+        		 layer.msg("项目支持成功！",{time:2500, icon:6, shift:6});
+          }
+        })//response包含了头信息，与地址信息，response.data是服务器返回的数据
+        .catch(function (error) { // 请求失败处理
+          alert('出错了')
+          console.log(error);
+        });
+		}
+	 }
+ });
+ orderMessage.getProjectOrderByOrderNumber();//获取订单信息
+ 
+ $('#myTab a').click(function (e) {
+	  e.preventDefault()
+	  $(this).tab('show')
+	})
+	$('#myTab1 a').click(function (e) {
+	  e.preventDefault()
+	  $(this).tab('show')
+	})
+</script>
+</body>
+</html>

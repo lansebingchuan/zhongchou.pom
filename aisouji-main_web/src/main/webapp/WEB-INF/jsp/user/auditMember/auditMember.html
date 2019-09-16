@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+	<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/css/main.css">
+	<link rel="stylesheet" href="/css/doc.min.css">
+	<style>
+	.tree li {
+        list-style-type: none;
+		cursor:pointer;
+	}
+	.int{ height: 30px; text-align: left; width: 600px; }
+     .high{ color: red; }
+     .msg{ font-size: 13px; }
+     .onError{ color: red; }
+     .onSuccess{ color: green; }
+	</style>
+<script src="/jquery/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="/script/user.js"></script>
+  </head>
+
+  <body>
+
+   <nav id="fixed-top" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <script type="text/javascript" src="/script/top.js"></script><!-- //加载TOP页面 -->
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+			 <div class="tree" id="tree">
+        <script type="text/javascript" src="/script/left.js"></script><!-- //加载left页面 -->
+      </div>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+				<ol class="breadcrumb">
+				  <li><a href="#">首页</a></li>
+				  <li><a href="#">数据列表</a></li>
+				  <li class="active">审核</li>
+				</ol>
+			<div class="panel panel-default">
+              <div class="panel-heading">表单数据<div style="float:right;cursor:pointer;" data-toggle="modal" data-target="#myModal"><i class="glyphicon glyphicon-question-sign"></i></div></div>
+			  <div class="panel-body">
+				<form role="form" id="userForm">
+				  <div class="form-group">
+					<label for="realName" class="label label-warning">会员真实姓名：</label>
+					<input type="text" disabled class="form-control" id="realName" value="请求获取">
+				  </div>
+				  <div class="form-group">
+					<label for="cardnum" class="label label-warning">会员身份证号：</label>
+					<input type="text" disabled class="form-control" id="cardnum" value="请求获取">
+				  </div>
+				  <div class="form-group" id="memberAutoPicks"><!-- 在这之后添加资质审核图片 -->
+					<label for="phone" class="label label-warning">会员电话号码：</label>
+					<input type="text" disabled class="form-control"  id="phone" value="请求获取">
+				  </div>
+				   <button id="successAuto"  type="button" class="btn btn-success"><i class="glyphicon glyphicon-edit"></i> 审核通过</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <button id="failAuto"  type="button" class="btn btn-danger"><i class="glyphicon glyphicon-refresh"></i> 审核不通过</button>
+				</form>
+			  </div>
+			</div>
+        </div>
+      </div>
+    </div>
+    <script src="/jquery/jquery-2.1.1.min.js"></script>
+    <script src="/bootstrap/js/bootstrap.min.js"></script>
+	  <script src="/script/docs.min.js"></script>
+	  <script type="text/javascript" src="/jquery/layer/layer.js"></script>
+	      <script src="/script/user.js"></script>
+	      <script src="/script/utils.js"></script>
+        <script type="text/javascript">
+        var memberid ;
+        var processInstanceId ;
+        var realName=$("#realName");
+        var cardnum=$("#cardnum");
+        var phone=$("#phone");
+        var memberAutoPicks=$("#memberAutoPicks");
+        $(getmemberid());  
+        function getmemberid() {//获取用户id地址栏
+          memberid = getUrlId("memberid");
+          processInstanceId = getUrlId("processInstanceId");
+        }
+        $(initAuditMember());//获取session中需要修改的数据
+        function initAuditMember() {
+        	//加载需要编辑的session的user
+           $.get("/auditor/initAuditMember.do" ,{"memberid":memberid } ,function(result) {
+        	   if (result.flage) {
+        		   layer.msg(result.message, {time:2000, icon:6, shift:6});
+        		   var dataList = result.auditMemberList;//得到审核结果
+        		   eachDataList(dataList);//渲染页面，审核数据集合
+        		 }
+           });
+        }
+        
+        function eachDataList(dataList) {
+        	 for (var i = 0; i < dataList.length; i++) {
+            var dataMap = dataList[i];
+            if (i == 0) {
+              realName.val(dataMap.realname);
+              cardnum.val(dataMap.cardnum);
+              phone.val( dataMap.phone);
+              memberid = dataMap.memberid;
+            }
+            var divgroup ='<hr><div class="form-group">'+
+								            '<label class="label label-warning" style="font-size: 15px;"  for="phone">'+dataMap.NAME+'：</label><br><br><br>'+
+								            '<img  src="'+dataMap.iconpath+'">'+
+								          '</div>';
+						memberAutoPicks.after(divgroup); 
+          }
+		   }
+   var status;
+    function finalAuto() {
+    	 $.ajax({
+             type: "POST",
+             url : "/auditor/successAuto.do",
+             data: {"memberid": memberid , "processInstanceId":processInstanceId ,"status":status},
+             beforeSend: function() {
+                   index = layer.load(2, {time: 10*1000});
+                   return true;
+              },
+             success: function(result) {
+               if (result) {
+            	   layer.close(index);
+                 layer.msg("审核成功！", {time:1000, icon:6, shift:6});
+               }else {
+                    layer.close(index);
+                    layer.msg("审核失败！", {time:1000, icon:5, shift:6});
+               }
+      
+            },
+             error: function () {
+            	 layer.close(index);
+                 layer.msg("已经超时！", {time:1000, icon:5, shift:6});
+             }
+        });
+		 }
+        
+        $("#failAuto").click(function() {
+        	status ='3';
+        	finalAuto();//审核不通过
+       });
+       $("#successAuto").click(function() {//审核通过
+    	   status ='2';
+    	   finalAuto(2);
+    	  });
+       $(function () {
+			    $(".list-group-item").click(function(){
+				    if ( $(this).find("ul") ) {
+						$(this).toggleClass("tree-closed");
+						if ( $(this).hasClass("tree-closed") ) {
+							$("ul", this).hide("fast");
+						} else {
+							$("ul", this).show("fast");
+						}
+					}
+				});
+            });
+      /*  window.onbeforeunload = function() {//离开页面的执行
+    	   $.post("/user/destoryUser.do");
+       }; */
+        </script>
+  </body>
+</html>

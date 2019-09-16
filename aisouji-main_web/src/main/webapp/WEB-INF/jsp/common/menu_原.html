@@ -1,0 +1,94 @@
+<ul style="padding-left:0px;" class="list-group">
+  <li class="list-group-item tree-closed" >
+    <a href="/main.htm"><i class="glyphicon glyphicon-dashboard"></i> 控制面板</a> 
+  </li>
+  <li class="list-group-item">
+    <span><i class="glyphicon glyphicon glyphicon-tasks"></i> 权限管理 <span class="badge" style="float:right">3</span></span> 
+    <ul style="margin-top:10px;">
+      <li style="height:30px;">
+        <a id="weihu" href="/user/user.htm" ><i class="glyphicon glyphicon-user"></i> 用户维护</a> <!-- ********************************************************* -->
+      </li>
+      <li style="height:30px;">
+        <a href="/user/role.htm"><i class="glyphicon glyphicon-king"></i> 角色维护</a> 
+      </li>
+      <li style="height:30px;">
+        <a href="/user/permission.htm"><i class="glyphicon glyphicon-lock"></i> 许可维护</a> 
+      </li>
+    </ul>
+  </li>
+  <li class="list-group-item tree-closed">
+    <span><i class="glyphicon glyphicon-ok"></i> 业务审核 <span class="badge" style="float:right">3</span></span> 
+    <ul style="margin-top:10px;display:none;">
+      <li style="height:30px; width: 130px;">
+        <a href="auth_cert.htm"><i class="glyphicon glyphicon-check"></i> 实名认证审核</a> 
+      </li>
+      <li style="height:30px;">
+        <a href="auth_adv.htm"><i class="glyphicon glyphicon-check"></i> 广告审核</a> 
+      </li>
+      <li style="height:30px;">
+        <a href="auth_project.htm"><i class="glyphicon glyphicon-check"></i> 项目审核</a> 
+      </li>
+    </ul>
+  </li>
+  <li class="list-group-item tree-closed">
+    <span><i class="glyphicon glyphicon-th-large"></i> 业务管理 <span class="badge" style="float:right">7</span></span> 
+    <ul style="margin-top:10px;display:none;">
+      <li style="height:30px;">
+        <a href="cert.htm"><i class="glyphicon glyphicon-picture"></i> 资质维护</a> 
+      </li>
+      <li style="height:30px;">
+        <a href="type.htm"><i class="glyphicon glyphicon-equalizer"></i> 分类管理</a> 
+      </li>
+      <li style="height:30px;">
+        <a href="process.htm"><i class="glyphicon glyphicon-random"></i> 流程管理</a> 
+      </li>
+      <li style="height:30px;">
+        <a href="advertisement.htm"><i class="glyphicon glyphicon-hdd"></i> 广告管理</a> 
+      </li>
+      <li style="height:30px;">
+        <a href="message.htm"><i class="glyphicon glyphicon-comment"></i> 消息模板</a> 
+      </li>
+      <li style="height:30px;">
+        <a href="project_type.htm"><i class="glyphicon glyphicon-list"></i> 项目分类</a> 
+      </li>
+      <li style="height:30px;">
+        <a href="tag.htm"><i class="glyphicon glyphicon-tags"></i> 项目标签</a> 
+      </li>
+    </ul>
+  </li>
+  <li class="list-group-item tree-closed" >
+    <a href="param.htm"><i class="glyphicon glyphicon-list-alt"></i> 参数管理</a> 
+  </li>
+</ul>
+<script src="/script/user.js"></script>
+<script type="text/javascript">
+$(function () {
+  $(".list-group-item").click(function(){
+      if ( $(this).find("ul") ) {
+       $(this).toggleClass("tree-closed");
+       if ( $(this).hasClass("tree-closed") ) {
+         $("ul", this).hide("fast");
+       } else {
+         $("ul", this).show("fast");
+       }
+     }
+  });
+    });
+ $(function() {//获取当前的URL，并设置点击的样式
+  var href = window.location.href;
+  var host = window.location.host;
+   var hostindex = href.indexOf(host);
+   var hostLength = host.length;
+   var url = href.substr(hostindex+hostLength);//获取当前的URL，
+   var as = $("#tree ul li ul li a");
+   var acss =  $('#tree ul li ul li a[href="'+url+'"]')
+   acss.css("color","red");
+   
+});
+$("tbody .btn-success").click(function(){
+    window.location.href = "assignRole.html";
+});
+$("tbody .btn-primary").click(function(){
+    window.location.href = "edit.html";
+});
+ </script>

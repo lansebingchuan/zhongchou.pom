@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+	<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/css/main.css">
+	<link rel="stylesheet" href="/css/pagination.css"><!-- //分页样式 -->
+	<style>
+	.tree li {
+        list-style-type: none;
+		cursor:pointer;
+	}
+	table tbody tr:nth-child(odd){background:#F4F4F4;}
+	table tbody td:nth-child(even){color:#C00;}
+	</style>
+	  <script src="/jquery/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="/script/user.js"></script>
+  </head>
+
+  <body>
+
+    <nav id="fixed-top" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <script type="text/javascript" src="/script/top.js"></script><!-- //加载TOP页面 -->
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+			<div class="tree" id="tree">
+        <script type="text/javascript" src="/script/left.js"></script><!-- //加载left页面 -->
+      </div>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+			<div class="panel panel-default">
+			  <div class="panel-heading">
+				<h3 class="panel-title"><i class="glyphicon glyphicon-th"></i> 数据列表</h3>
+			  </div>
+			  <div class="panel-body">
+<form class="form-inline" role="form" style="float:left;">
+  <div class="form-group has-feedback">
+    <div class="input-group">
+      <div class="input-group-addon">查询条件</div>
+      <input class="form-control has-success" type="text" placeholder="请输入查询条件">
+    </div>
+  </div>
+  <button type="button" class="btn btn-warning"><i class="glyphicon glyphicon-search"></i> 查询</button>
+</form>
+
+<button type="button"  class="btn btn-primary" style="float:right;" onclick="upProcessFileBtn()"><i class="glyphicon glyphicon-upload"></i> 上传流程定义文件</button>
+<form id="formID" action="/upProcessFile.do" method="post" enctype="multipart/form-data">
+  <input  type="file" name="file" id="fileClick" style="display: none;">
+</form>
+
+<br>
+ <hr style="clear:both;">
+          <div class="table-responsive">
+            <table class="table  table-bordered">
+              <thead>
+                <tr >
+                  <th width="30">#</th>
+                  <th>流程名称</th>
+                  <th>流程版本</th>
+                  <th>任务名称</th>
+                  <th width="100">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+              </tbody>
+			  <tfoot>
+			     <tr >
+				     <td colspan="6" align="center">
+								<ul class="pagination" id="parentPotion">
+                      <div id="Pagination" class="pagination"><!-- 这里显示分页 --></div>
+                  </ul>
+					 </td>
+				 </tr>
+
+			  </tfoot>
+            </table>
+          </div>
+			  </div>
+			</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/jquery/jquery-2.1.1.min.js"></script>
+    <script src="/bootstrap/js/bootstrap.min.js"></script>
+	<script src="/script/docs.min.js"></script>
+   <script type="text/javascript" src="/jquery/layer/layer.js"></script>
+<script type="text/javascript" src="/jquery/pagination/jquery.pagination.js"></script><!-- 分页插件 -->
+    <script type="text/javascript" src="/jquery/jquery-form.min.js"></script><!-- 提交form表单 -->
+     <script src="/jquery/jquery.form.js"></script><!-- 提交form表单 -->
+  <script type="text/javascript">
+ 
+  
+  var totalPage  = 0;//总页数
+  var tbody = $("tbody");//list 数据
+  var pageLength;//每页的数量
+  var pageup = $("#pageup");//上一页
+  var pageDown = $("#pageDown");//下一页
+  var num = 0 ;//当前页面
+  var data = {"pagePoint": 1 ,"pageSize": 1 };
+  var deleteid = false; //是否删除
+  var query = false;//表示是否查询
+  
+  function removes() {//移除之前的list集合
+       tbody.empty();//删除所有的管理员
+      }
+  
+  $(initProcessData());//加载流程数据
+  function initProcessData(a) {
+	  if (!a) {//不存在默认查询第一页
+          a=1;
+  }else {
+    if (deleteid) {//表示删除了，还是查询当前页
+   
+    }else {
+      a = a+ 1;
+     }
+   }
+    if (num == a && $.trim(data.queryText) == "") {//如果在当前页,如果查询的为空
+       if (!deleteid) {//并且没有删除，那么返回
+          return;
+       }                       
+     }
+   
+  num = a;//当前页
+  data.pagePoint = num;//传到后台的当前页
+  $.ajax({
+    type:"post",
+    url:"/initProcessData.do",
+    data: data,
+    success: function(result) {
+           if (result.flage) {//查询成功
+               removes();//移除之前的元素
+               if (!deleteid && !query) {//没有进行其他的操作，表示查询成功
+                 layer.msg(result.message,{time:1000, icon:6, shift:6});
+               }
+               deleteid = false;//恢复
+               var page = result.page;
+               totalPage = page.totalSize;//总共的页数
+               var lists = page.lists;
+               pageLength = lists.length;//每页数量，判断是否删除完了
+               if (lists.length > 0) {
+                  lists.forEach(tbodyPage);/* 添加role数据 */
+                  if (query) {
+                      layer.msg("检索成功！",{time:1000, icon:6, shift:6});
+                      query = false;//恢复
+                    }
+               }else {//当前的页数量没有
+                 num = num-2;//数量页号减
+               } 
+               //TotalPage();//添加页的位置数
+                   // 创建分页
+               $("#Pagination").pagination(totalPage, {
+                 num_edge_entries: 2, //边缘页数
+                 num_display_entries: 4, //主体页数
+                 callback: initProcessData,
+                 current_page: num-1,
+                 items_per_page:1 ,//每页显示1项
+                 prev_text: "前一页",
+                 next_text: "后一页"
+               });
+             }else {//查询失败
+               layer.msg(result.message,{time:1000, icon:5, shift:6});
+             }
+          },
+      error: function() {
+            layer.msg("查询失败！",{time:1000, icon:5, shift:6});
+         }
+     }); 
+	}
+
+  
+  function tbodyPage(value , n) {//渲染页面数据
+	     var tbodys = $("tbody");
+	     var href = "window.location.href='/toShowProcess.do?processId="+value.id+"'";
+	     var tr = '<tr>'+
+         '<td>'+(n+1)+'</td>'+
+         '<td>'+value.name+'</td>'+
+         '<td>'+value.version+'</td>'+
+         '<td>'+value.taskname+'</td>'+
+         '<td>'+
+             '<button type="button" onclick="'+href+'"  class="btn btn-success btn-xs"><i class=" glyphicon glyphicon-eye-open"></i></button>'+
+             '<button type="button" onclick='+'"deleteProcess(\''+value.id+'\')"'+' class="btn btn-danger btn-xs"><i class=" glyphicon glyphicon-remove"></i></button>'+
+         '</td>'+
+       '</tr>';
+	     tbodys.append(tr);
+	  }
+  
+  
+  var options = {  
+	       beforeSubmit: function() {
+	         start();
+	       },  //提交前的回调函数  
+	       success: function() {
+	          layer.msg("数据添加成功！已经跳转", {time:1000, icon:6, shift:6});
+	          stop_load("/process.htm");
+	       }, 
+	       error: function() {
+	           layer.msg("数据保存错误！", {time:1000, icon:5, shift:6});
+	        },//提交后的回调函数  
+	       //url: url,                 //默认是form的action， 如果申明，则会覆盖  
+	       //type: type,               //默认是form的method（get or post），如果申明，则会覆盖  
+	       //dataType: null,           //html(默认), xml, script, json...接受服务端返回的类型  
+	       //clearForm: true,          //成功提交后，清除所有表单元素的值  
+	       //resetForm: true,          //成功提交后，重置所有表单元素的值  
+	       timeout: 3000               //限制请求的时间，当请求大于3秒后，跳出请求  
+	    }  
+  function upProcessFileBtn() {
+	     $("#fileClick").click();
+	  }
+  
+	 $("#fileClick").change(function() {
+		 $("#formID").ajaxSubmit(options);//jquery提交表单
+	 }); 
+	 
+	 
+	 function deleteProcess(processId) {
+         layer.confirm("确认删除_"+processId+"？",  {icon: 2, title:'警告'}, function(cindex){//询问是否删除
+             layer.close(cindex);
+             /* $.post("/user/deleteUsers.do" , ids , function(result) { *///以字符串的形式封装传输
+               $.post("/delProcess.do" , {"processId":processId} , function(result) { //以JSON对象数组方式封装传输
+                   if (result.flage) {
+                     layer.msg(result.message,{time:1000, icon:6, shift:6});
+                     deleteid= true;//用于表示是否显示查询成功
+                     if (num == 2) {//如果剩余两页，那么跳转到第一页
+                    	 initProcessData(1);         //重新初始化
+                      }else {//否则调转到相关页面
+                    	  if ((pageLength-1) <= 0) {//如果长度为0 了
+                            initProcessData(num-1);
+						            } else {
+						            	initProcessData(num);
+									      } 
+
+                       }
+                   }else {
+                     layer.msg(result.message,{time:1000, icon:5, shift:6});
+                     }
+               });
+         }, function(cindex){//取消
+             layer.close(cindex);
+             return;
+         });
+	}
+	 
+  </script>       
+  </body>
+</html>

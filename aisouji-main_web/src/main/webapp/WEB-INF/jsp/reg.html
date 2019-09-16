@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keys" content="">
+    <meta name="author" content="">
+	<link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link rel="stylesheet" href="css/login.css">
+    <style>
+     .int{ height: 30px; text-align: left; width: 600px; }
+     .high{ color: red; }
+     .msg{ font-size: 13px; }
+     .onError{ color: red; }
+     .onSuccess{ color: green; }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <div><a class="navbar-brand" href="index.html" style="font-size:32px;">尚筹网-创意产品众筹平台</a></div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+
+      <form class="form-signin" role="form" id="userFrom">
+        <h2 class="form-signin-heading"><i class="glyphicon glyphicon-log-in"></i> 用户注册</h2>
+       <span id="show"></span>
+		  <div class="form-group has-success has-feedback">
+			<input type="text" name="loginacct" class="form-control" id="loginacct" placeholder="请输入登录账号" autofocus>
+			<span class="glyphicon glyphicon-user form-control-feedback"></span>
+		  </div>
+		  <div class="form-group has-success has-feedback">
+			<input type="password" name="userpswd" class="form-control" id="userpswd" placeholder="请输入登录密码" style="margin-top:10px;">
+			<span class="glyphicon glyphicon-lock form-control-feedback"></span>
+		  </div>
+		  <div class="form-group has-success has-feedback">
+			<input type="text" name="email" class="form-control" id="email" placeholder="请输入邮箱地址" style="margin-top:10px;">
+			<span class="glyphicon glyphicon glyphicon-envelope form-control-feedback"></span>
+		  </div>
+		  <div class="form-group has-success has-feedback">
+			<select class="form-control" name="type">
+                <option>企业</option>
+                <option>个人</option>
+            </select>
+		  </div>
+        <div class="checkbox">
+          <label>
+            忘记密码
+          </label>
+          <label style="float:right">
+            <a href="login.htm">我有账号</a>
+          </label>
+        </div>
+        <a class="btn btn-lg btn-success btn-block" onclick="domember()"> 注册</a>
+      </form>
+    </div>
+    <script src="jquery/jquery-2.1.1.min.js"></script>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+      <script src="/script/user.js"></script>
+    <!-- 点击、登录验证 -->
+    <script>
+    function domember() {
+    /*  $("#loginForm").submit(); */
+   /*  使用 ajax 请求发送表单数据 */
+    var loginacct = $("#loginacct");
+    var userpswd = $("#userpswd");
+    var email = $("#email");
+    if ($.trim(loginacct.val()) == "") {
+        alert("请输入登录名");
+        loginacct.focus();
+        loginacct.val("");
+        return;
+      }
+    if ($.trim(userpswd.val()) == "") {
+        alert("请输入登录密码");
+        userpswd.focus();
+        userpswd.val("");
+        return;
+        }
+    if ($.trim(email.val()) == "") {
+            alert("请输入正确邮箱");
+            email.focus();
+            email.val("");
+            return;
+            }
+    chakeForm();
+     if (!chakeFormYes_No) {
+    	 console.log("错误");
+    	  return;
+    	}
+      $.post("/regUser.do", $("#userFrom").serialize(),function(data){
+           if (data == true) {
+        	   skept();
+      }
+       }).error(function() { alert("注册失败！"); });
+    }
+    var t=5;//设定跳转的时间
+    function skept() {
+	    	console.log("asd")
+	   
+    	 setInterval("refer()",1000); //启动1秒定时
+    	  	}
+    function refer(){
+        if(t==0){
+          window.location.href="/login.htm"; //#设定跳转的链接地址
+          }
+           document.getElementById('show').innerHTML="注册成功！"+""+t+"秒后跳转到首页"; // 显示倒计时
+            t--; // 计数器递减
+        }
+     <!--  /*    为表单元素添加失去焦点事件 */ -->
+  
+    </script>
+  </body>
+</html>

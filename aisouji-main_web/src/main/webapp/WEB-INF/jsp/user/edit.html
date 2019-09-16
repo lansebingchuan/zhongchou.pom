@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+	<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/css/main.css">
+	<link rel="stylesheet" href="/css/doc.min.css">
+	<style>
+	.tree li {
+        list-style-type: none;
+		cursor:pointer;
+	}
+	.int{ height: 30px; text-align: left; width: 600px; }
+     .high{ color: red; }
+     .msg{ font-size: 13px; }
+     .onError{ color: red; }
+     .onSuccess{ color: green; }
+	</style>
+<script src="/jquery/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="/script/user.js"></script>
+  </head>
+
+  <body>
+
+   <nav id="fixed-top" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <script type="text/javascript" src="/script/top.js"></script><!-- //加载TOP页面 -->
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+			 <div class="tree" id="tree">
+        <script type="text/javascript" src="/script/left.js"></script><!-- //加载left页面 -->
+      </div>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+				<ol class="breadcrumb">
+				  <li><a href="#">首页</a></li>
+				  <li><a href="#">数据列表</a></li>
+				  <li class="active">修改</li>
+				</ol>
+			<div class="panel panel-default">
+              <div class="panel-heading">表单数据<div style="float:right;cursor:pointer;" data-toggle="modal" data-target="#myModal"><i class="glyphicon glyphicon-question-sign"></i></div></div>
+			  <div class="panel-body">
+				<form role="form" id="userForm">
+				  <div class="form-group">
+					<label for="loginacct">登陆账号</label>
+					<input type="text" class="form-control" id="loginacct" value="请求获取">
+				  </div>
+				  <div class="form-group">
+					<label for="username">用户名称</label>
+					<input type="text" class="form-control" id="username" value="请求获取">
+				  </div>
+				  <div class="form-group">
+					<label for="email">邮箱地址</label>
+					<input type="email" class="form-control" id="email" value="请求获取">
+					<p class="help-block label label-warning">请输入合法的邮箱地址, 格式为： xxxx@xxxx.com</p>
+				  </div>
+				  <button id="updateUser" type="button" class="btn btn-success"><i class="glyphicon glyphicon-edit"></i> 修改</button>
+				  <button id="resetFrom" type="button" class="btn btn-danger"><i class="glyphicon glyphicon-refresh"></i> 重置</button>
+				</form>
+			  </div>
+			</div>
+        </div>
+      </div>
+    </div>
+    <script src="/jquery/jquery-2.1.1.min.js"></script>
+    <script src="/bootstrap/js/bootstrap.min.js"></script>
+	  <script src="/script/docs.min.js"></script>
+	  <script type="text/javascript" src="/jquery/layer/layer.js"></script>
+	      <script src="/script/user.js"></script>
+        <script type="text/javascript">
+        var id ;
+        var loginacct=$("#loginacct");
+        var username=$("#username");
+        var email=$("#email");
+        initUser();//获取session中需要修改的数据
+        function initUser() {
+        	//加载需要编辑的session的user
+           $.get("/user/edituser.do" , function(result) {
+        	   if (!result) {
+        		   layer.msg("请重新加载数据！", {time:2000, icon:6, shift:6});
+        		  }
+             loginacct.val(result.loginacct);
+             username.val(result.username);
+             email.val( result.email);
+             id = result.id;
+           });
+        }
+        $("#resetFrom").click(function() {
+        	initUser();//重置按钮的点击事件，点击了那么清空表单
+       });
+       $("#updateUser").click(function() {
+    	   chakeForm();
+    	   if (!chakeFormYes_No) {
+               return;
+          }
+    	   var loginacctvalue = loginacct.val();
+    	   var usernamevalue = username.val();
+    	   var emailvalue = email.val();
+    	   console.log(loginacct.val());
+    	   var index = -1 ;
+    	    $.ajax({
+    	     type: "GET",
+    	     url : "/user/updateUser.do",
+    	     data: {"id": id , "loginacct":loginacctvalue , "username":usernamevalue , "email":emailvalue },
+    	     beforeSend: function() {
+                 index = layer.load(2, {time: 10*1000});
+                 return true;
+            },
+    	     success: function(result) {
+    	    	 if (result) {
+    	    	         layer.close(index);
+    	                layer.msg("修改成功！", {time:1000, icon:6, shift:6});
+    	    		 }else {
+    	    			  layer.close(index);
+                  layer.msg("修改失败！", {time:1000, icon:5, shift:6});
+    	    			  	}
+    
+    	    	 },
+    	    	 error: function () {
+    	    		 layer.msg("已经超时！", {time:1000, icon:5, shift:6});
+    	    	}
+    	    });
+    	  });
+            $(function () {
+			    $(".list-group-item").click(function(){
+				    if ( $(this).find("ul") ) {
+						$(this).toggleClass("tree-closed");
+						if ( $(this).hasClass("tree-closed") ) {
+							$("ul", this).hide("fast");
+						} else {
+							$("ul", this).show("fast");
+						}
+					}
+				});
+            });
+       window.onbeforeunload = function() {
+    	   $.post("/user/destoryUser.do");
+       };
+        </script>
+  </body>
+</html>

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aisouji.common.dao.TicketMapper" >
+  <resultMap id="BaseResultMap" type="com.aisouji.bean.Ticket" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="memberid" property="memberid" jdbcType="INTEGER" />
+    <result column="pinstid" property="pinstid" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="CHAR" />
+    <result column="autocode" property="autocode" jdbcType="CHAR" />
+    <result column="pstep" property="pstep" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, memberid, pinstid, status, autocode, pstep
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_ticket
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="getTicketByMemberId" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_ticket
+    where memberid = #{memberId}
+  </select>
+  <select id="getAuditMemberByMemberid"  parameterType="java.lang.Integer" resultType="Map">
+    SELECT m.id AS memberid,m.realname,m.cardnum,m.phone,c. NAME,mc.certid,mc.iconpath
+		FROM 
+		t_member AS m
+		JOIN t_member_cert AS mc
+		JOIN t_cert AS c
+		WHERE m.id = #{memberid} AND m.id = mc.memberid AND c.id = mc.certid
+  </select>
+  <select id="getMemberByInstanceId" resultType="Member" parameterType="java.lang.String" >
+    select m.id,m.realname
+    from t_member as m, t_ticket as t
+    where m.id = t.memberid and t.pinstid = #{processInstanceId}
+  </select>
+  <select id="getProjectByInstanceId" resultType="Map" parameterType="java.lang.String" >
+    SELECT
+		  m.id AS memberid , p.id AS projectid , p.name ,m.realname , p.money , p.day , p.deploydate
+		FROM
+		  t_member_project_ticket AS mpt,
+		  t_project AS p,
+		  t_member AS m
+		WHERE
+     p.id = mpt.projectid AND mpt.proinstid = #{processInstanceId}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from t_ticket
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.aisouji.bean.Ticket" >
+    insert into t_ticket (id, memberid, pinstid, 
+      status, autocode, pstep)
+    values (#{id,jdbcType=INTEGER}, #{memberid,jdbcType=INTEGER}, #{pinstid,jdbcType=VARCHAR}, 
+      #{status,jdbcType=CHAR}, #{autocode,jdbcType=CHAR}, #{pstep,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.aisouji.bean.Ticket" >
+    insert into t_ticket
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="memberid != null" >
+        memberid,
+      </if>
+      <if test="pinstid != null" >
+        pinstid,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="autocode != null" >
+        autocode,
+      </if>
+      <if test="pstep != null" >
+        pstep,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="memberid != null" >
+        #{memberid,jdbcType=INTEGER},
+      </if>
+      <if test="pinstid != null" >
+        #{pinstid,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=CHAR},
+      </if>
+      <if test="autocode != null" >
+        #{autocode,jdbcType=CHAR},
+      </if>
+      <if test="pstep != null" >
+        #{pstep,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.aisouji.bean.Ticket" >
+    update t_ticket
+    <set >
+      <if test="memberid != null" >
+        memberid = #{memberid,jdbcType=INTEGER},
+      </if>
+      <if test="pinstid != null" >
+        pinstid = #{pinstid,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=CHAR},
+      </if>
+      <if test="autocode != null" >
+        autocode = #{autocode,jdbcType=CHAR},
+      </if>
+      <if test="pstep != null" >
+        pstep = #{pstep,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.aisouji.bean.Ticket" >
+    update t_ticket
+    set memberid = #{memberid,jdbcType=INTEGER},
+      pinstid = #{pinstid,jdbcType=VARCHAR},
+      status = #{status,jdbcType=CHAR},
+      autocode = #{autocode,jdbcType=CHAR},
+      pstep = #{pstep,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateTicketOnPstep">
+    update t_ticket set
+      pstep = #{pstep}
+    where memberid = #{memberid}
+  </update>
+  
+  
+  <update id="updaeMemberStatusByMemberId">
+    UPDATE t_member
+		SET t_member.authstatus = #{status}
+		WHERE
+		  t_member.id = #{memberid}
+  </update>
+  
+  <update id="updateTicketByMemberId" parameterType="com.aisouji.bean.Ticket" >
+    update t_ticket
+    <set >
+      <if test="memberid != null" >
+        memberid = #{memberid,jdbcType=INTEGER},
+      </if>
+      <if test="pinstid != null" >
+        pinstid = #{pinstid,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=CHAR},
+      </if>
+      <if test="autocode != null" >
+        autocode = #{autocode,jdbcType=CHAR},
+      </if>
+      <if test="pstep != null" >
+        pstep = #{pstep,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where memberid = #{memberid,jdbcType=INTEGER}
+  </update>
+</mapper>

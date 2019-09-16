@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+	<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/pagination.css"><!-- //分页样式 -->
+	<style>
+	.tree li {
+        list-style-type: none;
+		cursor:pointer;
+	}
+	table tbody tr:nth-child(odd){background:#F4F4F4;}
+	table tbody td:nth-child(even){color:#C00;}
+	</style>
+	<script src="/jquery/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="/script/user.js"></script>
+  </head>
+
+  <body>
+
+    <nav id="fixed-top" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <script type="text/javascript" src="/script/top.js"></script><!-- //加载TOP页面 -->
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+			<div class="tree" id="tree">
+        <script type="text/javascript" src="/script/left.js"></script><!-- //加载left页面 -->
+      </div>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+			<div class="panel panel-default">
+			  <div class="panel-heading">
+				<h3 class="panel-title"><i class="glyphicon glyphicon-th"></i> 数据列表</h3>
+			  </div>
+			  <div class="panel-body">
+<form class="form-inline" role="form" style="float:left;">
+  <div class="form-group has-feedback">
+    <div class="input-group">
+      <div class="input-group-addon">查询条件</div>
+      <input class="form-control has-success" type="text" placeholder="请输入查询条件">
+    </div>
+  </div>
+  <button type="button" class="btn btn-warning"><i class="glyphicon glyphicon-search"></i> 查询</button>
+</form>
+<button type="button" onclick="removeAll()" class="btn btn-danger" style="float:right;margin-left:10px;"><i class=" glyphicon glyphicon-remove"></i> 删除</button>
+<button type="button" onclick="window.location.href='/ment/toaddAdvertisement.htm'" class="btn btn-primary" style="float:right;" onclick="window.location.href='form.html'"><i class="glyphicon glyphicon-plus"></i> 新增</button>
+<br>
+ <hr style="clear:both;">
+          <div class="table-responsive">
+            <table class="table  table-bordered">
+              <thead>
+                <tr>
+                  <th width="30">#</th>
+                  <th>广告描述</th>
+                  <th>状态</th>
+                  <th width="100">操作</th>
+                </tr>
+              </thead>
+              <tbody id="tbody">
+               
+               
+              </tbody>
+			  <tfoot>
+			     <tr >
+				     <td colspan="4" align="center">
+						<ul class="pagination" id="parentPotion">
+								<li  id="pageup" ><a onclick='pointPageUp()'>上一页</a></li>
+                
+                <li id="pageDown" class="nextPage"><a onclick='pointPageDwon()'>下一页</a></li>
+							 </ul>
+					 </td>
+				 </tr>
+
+			  </tfoot>
+            </table>
+          </div>
+			  </div>
+			</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/jquery/jquery-2.1.1.min.js"></script>
+    <script src="/bootstrap/js/bootstrap.min.js"></script>
+	<script src="/script/docs.min.js"></script>
+	 <script type="text/javascript" src="/jquery/layer/layer.js"></script>
+<script type="text/javascript" src="/jquery/pagination/jquery.pagination.js"></script><!-- 分页插件 -->
+	<script type="text/javascript">
+	
+	  var totalPage  = 0;//总页数
+    var tbody = $("#tbody");//list 数据
+    var pageup = $("#pageup");//上一页
+    var pageDown = $("#pageDown");//下一页
+    var num = 0 ;//当前页面
+    var data = {"pagePoint": 1 ,"pageSize": 1 ,"queryText":""};
+    var deleteid = false; //是否删除
+    var checks ; //所有的复选框
+    $(initRole());
+    $("#queryButton").click(function() {//条件查询
+        var queryText = $("#queryText").val();
+        data.queryText = queryText;//增加设置条件查询的值为
+        pageDown.removeClass("disabled");
+        console.log(data.queryText);
+        initRole();//进行查询
+       });
+    
+   function initRole(a) {//根据页数查询
+     if (!a) {
+             a=1;
+     }
+     if ($.trim(data.queryText) == "") {//为空表示查询全部
+           
+     }else {
+        if (num == a && $.trim(data.queryText) == "") {//如果在当前页,如果查询的为空
+          if (!deleteid) {//并且没有删除，那么返回
+             return;
+          }                       
+        }
+      }
+     num = a;//当前页
+     data.pagePoint = num;//传到后台的当前页
+     $.ajax({
+    	 type:"post",
+    	 url:"/ment/initAdvertisement.do",
+    	 data: data,
+    	 success: function(result) {
+    	        if (result.flage) {//查询成功
+    	            removes(tbody , pageup);//移除之前的元素
+    	            if (!deleteid) {//没有进行其他的操作，表示查询成功
+    	              layer.msg(result.message,{time:1000, icon:6, shift:6});
+    	            }
+    	            deleteid = false;//恢复
+    	            var page = result.page;
+    	            totalPage = page.totalPage;//总共的页数
+    	            var lists = page.lists;
+    	            if (lists.length > 0) {
+    	               lists.forEach(tbodyPage);/* 添加role数据 */
+    	            } 
+    	            TotalPage();//添加页的位置数
+    	            checks = $("tbody tr td input[type=checkbox]");//位置填加完毕之后，对复选框的监听器，做注册，如果在其他地方做，那么可能页面没有加载完毕，无法完成监听
+    	          }else {//查询失败
+    	            layer.msg(result.message,{time:1000, icon:5, shift:6});
+    	          }
+    	       },
+	       error: function() {
+               layer.close(index);
+               layer.msg("查询失败！",{time:1000, icon:5, shift:6});
+            }
+    /*  $.post("/adv/initAdvertisement.do", data , function(result) {
+        if (result.flage) {//查询成功
+          removes(tbody , pageup);//移除之前的元素
+          if (!deleteid) {//没有进行其他的操作，表示查询成功
+            layer.msg(result.message,{time:1000, icon:6, shift:6});
+          }
+          deleteid = false;//恢复
+          var page = result.page;
+          totalPage = page.totalPage;//总共的页数
+          var lists = page.lists;
+          if (lists.length > 0) {
+             lists.forEach(tbodyPage);// 添加role数据 
+          } 
+          TotalPage();//添加页的位置数
+          checks = $("tbody tr td input[type=checkbox]");//位置填加完毕之后，对复选框的监听器，做注册，如果在其他地方做，那么可能页面没有加载完毕，无法完成监听
+        }else {//查询失败
+          layer.msg(result.message,{time:1000, icon:5, shift:6});
+        }
+     }).error(function() {
+         layer.msg("查询失败！",{time:1000, icon:5, shift:6});
+    });*/
+    }); 
+   }
+   
+   function pointPageUp() {//向上翻页
+         if (num == 1) {
+            return;
+          }else {
+            var numUp= --num;
+            if (numUp == 1) {//下一个为1 不能用
+              pageup.addClass("disabled");
+             }
+            if (numUp <= totalPage) {
+              pageDown.removeClass("disabled");
+            }
+            num++;
+            initRole(numUp); //获取当前 a 标签的值
+          }
+        }
+    function pointPageDwon() {//向下翻页 class="disabled"
+       if (num == totalPage) {
+            return;
+         }else {
+           var numDown= ++num;
+           if (numDown == totalPage) {//满了不能用
+             pageDown.addClass("disabled");
+            }
+           if (numDown >= 2) {
+             pageup.removeClass("disabled");
+           }
+           num--;
+           initRole(numDown); //获取当前 a 标签的值
+         }
+     }
+   
+    function TotalPage(){//显示添加页码 的索引
+      for (i = totalPage; i >= 1; i--) { 
+            var li;
+            if(i == num){
+                li = $("<li class='active li'></li>")
+            }else{
+              li = $("<li  class='li'></li>")
+           }
+            var a = $("<a onclick='pointPage(this)' ><span class='sr-only'>(current)</span></a>");
+            a.text(i);
+            li.append(a);//添加一个子元素
+            pageup.after(li);//在上一页之后添加
+        }
+     }
+    
+    
+   function pointPage(a) {//通过点击查询第几页
+       var num = $(a).text();
+       if (num == 1) {
+         pageDown.removeClass("disabled");//下一页
+         pageup.addClass("disabled");//上一页
+       }
+       if (num == totalPage) {
+         pageup.removeClass("disabled");//上一页
+         pageDown.addClass("disabled");//下一页
+       }
+       initRole(num); //获取当前 a 标签的值
+      }
+   
+   function removes(tbody , pageone) {//移除之前的list集合
+     tbody.empty();//删除所有的管理员
+     $("#parentPotion li").filter(".li").remove();//移除所有的带（li 的 class）下一页
+    }
+   
+  function tbodyPage(value , n) {//渲染页面数据
+     var tbodys = $("tbody");
+     var statusvalue;
+     var status = value.status;
+     if (status == 0) {
+    	 statusvalue = "草稿";
+	    }else if (status == 1) {
+	    	statusvalue = "未审核";
+		  }else if (status == 2) {
+		        statusvalue = "审核完毕";
+	    }else if (status == 3) {
+	        statusvalue = "发布";
+	    }
+     var href = "window.location.href='/ment/editAdvertisement.do?id="+value.id+"' ";
+     var tr = ' <tr>'+
+			         '<td>'+n+'</td>'+
+			         '<td>'+value.name+'</td>'+
+			         '<td>'+statusvalue+'</td>'+
+			         '<td>'+
+			           '<button type="button" onclick="check_data('+value.id+')"  class="btn btn-success btn-xs"><i class=" glyphicon glyphicon-check"></i></button>'+
+		             '<button type="button" onclick="'+href+'"   class="btn btn-primary btn-xs"><i class=" glyphicon glyphicon-pencil"></i></button>'+
+		             '<button type="button" onclick="removeByid('+value.id+')" class="btn btn-danger btn-xs"><i class=" glyphicon glyphicon-remove"></i></button>'+
+			          '</td>'+
+			       '</tr>';
+		         tbodys.append(tr);
+  }
+  
+  
+   function checkbox() {//解决方法，在每个复选框上固定一个点击事件
+         var boo=true;
+        //为每一个复选框注册点击事件
+         checks.each(function(n , value) {//checks：所有的复选框，在完成加载的时候得到
+                      if (!value.checked) {
+                        boo=false;
+                        return false;
+                    }
+             });
+          $("#selectAll").prop("checked" , boo);
+    }
+   
+   $("#selectAll").click(function() {//选择所有用户
+     var flage = this.checked
+     checks.each(function() {
+         this.checked = flage;
+     });
+   });
+   $("#fanxuan").click(function() {
+       var iffan = false;var bexuan = true;
+       checks.each(function(n , value) {//checks：所有的复选框，在完成加载的时候得到
+             if (value.checked) {
+               iffan=true;
+             }
+       });
+       checks.each(function(n , value) {//checks：所有的复选框，在完成加载的时候得到
+             if (!value.checked) {
+               bexuan=false;
+               return false;
+             }
+       });
+       if (iffan) {//为真表示有被选
+         if (bexuan) {//是不是全选
+           checks.each(function() {//checks：所有的复选框，在完成加载的时候得到
+                 this.checked = false;
+             });
+           $("#selectAll").removeAttr("checked" , false);
+         }else {
+           checks.each(function(n , value) {//checks：所有的复选框，在完成加载的时候得到
+                   if (value.checked) {
+                     value.checked = false;
+                   }else {
+                     value.checked = true;
+                   }
+               });
+          }
+       }else {//没有一个被选
+         checks.each(function() {
+               this.checked = true;
+         });
+         $("#selectAll").prop("checked" , true);//增加属性为true
+       }
+    });
+  
+  function check_data(id) {
+    start();
+    $.post("/user/role/toupdate.do", {"id":id },function(result){
+      if (result.flage) {
+        layer.msg("检查数据数据成功，正在加载！",{time:1000, icon:6, shift:6});
+        stop_load("/user/role/update_htm.htm");
+      }else {
+        layer.msg("查询数据失败！",{time:1000, icon:5, shift:6});
+       }
+     }  
+    );
+   }
+  
+  function removeByid(id) {
+      layer.confirm("确认移除？",  {icon: 2, title:'警告'}, function(cindex){//询问是否删除
+         layer.close(cindex);
+         $.post("", {"id":id },function(result){
+             if (result.flage) {
+               layer.msg(result.message,{time:1000, icon:6, shift:6});
+               deleteid = true;
+               initRole(num);//进行当前页查询
+             }else {
+               layer.msg(result.message,{time:1000, icon:5, shift:6});
+              }
+            }  
+          );
+     }, function(cindex){//取消
+         layer.close(cindex);
+         return;
+     });
+  }
+  function removeAll() {
+    var roleList = {};
+     checks.each(function(n , value) {//checks：所有的复选框，在完成加载的时候得到
+             if (value.checked) {
+               roleList["idlist["+n+"]"] = value.id;
+           }
+    //发送请求
+    if (JSON.stringify(roleList) == "{}") {
+      layer.msg("请选择需要删除的用户！",{time:1000, icon:5, shift:6});
+      return;
+     }
+      layer.confirm("确认删除这些吗？",  {icon: 2, title:'警告'}, function(cindex){//询问是否删除
+          layer.close(cindex);
+          /* $.post("/user/deleteUsers.do" , ids , function(result) { *///以字符串的形式封装传输
+            $.post("" , roleList , function(result) { //以JSON对象数组方式封装传输
+                if (result) {
+                  layer.msg("成功 删除！",{time:1000, icon:6, shift:6});
+                  deleteid= true;//用于表示是否显示查询成功
+                  if (num == 2) {//如果剩余两页，那么跳转到第一页
+                    init(1);
+                   }else {//否则调转到相关页面
+                     initRole(num);//进行当前页查询
+                    }
+                }else {
+                  layer.msg("删除失败！",{time:1000, icon:5, shift:6});
+                  }
+            });
+      }, function(cindex){//取消
+          layer.close(cindex);
+          return;
+      });
+    });
+  }
+
+	</script>
+  </body>
+</html>

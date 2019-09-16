@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+	<context:component-scan base-package="com.aisouji.*">
+	<!-- 因为是spring框架，那么排除这个注解 Controller,交给springmvc管理-->
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+	</context:component-scan>
+
+	<!-- 加载外部属性配置文件 -->
+	<bean id="propertyPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations" value="classpath:config/jdbc.properties" />
+	</bean>
+	
+	<!-- 配置C3P0数据源 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="${jdbc.driver}"/>
+		<property name="jdbcUrl" value="${jdbc.url}"/>
+		<property name="user" value="${jdbc.user}"/>
+		<property name="password" value="${jdbc.password}"/>
+	</bean>
+	
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+	    <property name="configLocation" value="classpath:mybatis/mybatis-config.xml"></property><!-- 添加表的配置信息 -->
+	    <property name="dataSource" ref="dataSource"></property>
+	    <property name="mapperLocations">
+	        <list>
+	            <value>classpath*:mybatis_mapper/*Mapper.xml</value><!-- 添加表的映射文件的信息 -->
+	        </list>
+	    </property>
+	</bean>
+	
+	<!-- 扫描Mapper映射配置 -->
+	<bean id="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+	<!-- 	<property name="basePackage" value="com.aisouji.manager.dao,com.aisouji.potal.dao"/>  两个不同模块的DAO-->
+	<property name="basePackage" value="com.aisouji.*.dao"/>
+	</bean>
+
+	<!-- 事务管理器    基于面向切面AOP构成，把访问数据库的类，构成代理对象，然后交给事务管理，带代理类执行的时候管理切面执行里面的事务-->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	
+	<tx:advice  id="transactionAdvice" transaction-manager="transactionManager">
+		<tx:attributes> <!-- 对所有的方法 如果 propagation="REQUIRED"没有事务，那么加一个事务 -->      <!-- 所有的异常回滚 -->
+			<tx:method name="*" propagation="REQUIRED" isolation="DEFAULT" rollback-for="java.lang.Exception"/>
+			<!-- 对所有的的query、get查询，设置为true 只读   ，这样速度相对快点-->
+			<tx:method name="query*" read-only="true"/>
+			<tx:method name="get*" read-only="true"/>
+		</tx:attributes>
+	</tx:advice>
+	<!-- aop动态代理 ，这里代理所有的实现类。使用JDK代理（面向接口 ，目标类和代理类实现共同的接口），使用cglib代理（基于继承（代理类是目标类的子类），优先使用JDK代理，采用面向接口编程和面向抽象编程） -->
+	<aop:config><!--增加事务  ： 在com.aisouji.包下的==所有的子包 == 以*Service结尾的类===的所有的方法*，都加事务，变为代理类，赋值给= @contralloer=注解中的  testService=== -->
+		<aop:advisor advice-ref="transactionAdvice" pointcut="execution(* com.aisouji..*Service.*(..))"/>
+	</aop:config>		
+</beans>

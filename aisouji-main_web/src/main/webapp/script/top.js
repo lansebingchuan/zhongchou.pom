@@ -1,0 +1,12 @@
+ /*引入Header部分公共代码*/
+$(function(){
+  $.ajax({
+   type:"get",
+   url:"/topMenu.htm",
+   async:true,
+   success:function(data){
+	   $("#fixed-top").html(data);//展示数据
+	   initUserName();//设置名称
+   	}
+   });
+ });

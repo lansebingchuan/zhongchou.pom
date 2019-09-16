@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+	<context:component-scan base-package="aspect"><!--这个包aspect下的所有类  -->
+	<!-- 因为是spring框架，那么排除这个注解 Controller,交给springmvc管理-->
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+	</context:component-scan>
+  <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+  
+  <!-- Spring - AOP 方式生成代理对象 -->
+  <!-- <bean id="testDaoProxy" class="org.springframework.aop.framework.ProxyFactoryBean">
+	 <property name="target" ref="testDao"></property>
+	 <property name="interceptorNames" value="myAspect"></property>
+	 <property name="proxyTargetClass" value="true"></property> 为true表示使用cglib，false表示使用JDK 
+	</bean> -->
+	
+	<!-- Spring - AspectJ AOP -->
+	<!-- <aop:config>
+	 <aop:aspect ref="aspectJ_xml">
+	   <aop:pointcut expression="execution(* aspect.*.*(..))" id="pointcut"/>
+	   <aop:before method="before" pointcut-ref="pointcut"/>
+	   <aop:after-returning method="afterReturn" pointcut-ref="pointcut" returning="returnVal"/>returning="returnVal"为后置通知方法里面的第二个参数 
+	   <aop:around method="around" pointcut-ref="pointcut" />
+	   <aop:after-throwing method="throwing" pointcut-ref="pointcut" throwing="e"/>throwing="e"为异常通知方法里面的第二个参数 
+	   <aop:after method="after" pointcut-ref="pointcut"/>
+	 </aop:aspect>
+	</aop:config> -->
+</beans>

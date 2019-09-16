@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/doc.min.css">
+  <style>
+  .tree li {
+        list-style-type: none;
+    cursor:pointer;
+  }
+   .int{ height: 30px; text-align: left; width: 600px; }
+     .high{ color: red; }
+     .msg{ font-size: 13px; }
+     .onError{ color: red; }
+     .onSuccess{ color: green; }
+  </style>
+  <script src="/jquery/jquery-2.1.1.min.js"></script>
+  <script type="text/javascript" src="/script/user.js"></script>
+  </head>
+
+  <body>
+
+     <nav id="fixed-top" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <script type="text/javascript" src="/script/top.js"></script><!-- //加载TOP页面 -->
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+      <div class="tree" id="tree">
+         <script type="text/javascript" src="/script/left.js"></script><!-- //加载left页面 -->
+      </div>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <ol class="breadcrumb">
+          <li><a href="#">首页</a></li>
+          <li><a href="#">数据列表</a></li>
+          <li class="active">新增</li>
+        </ol>
+      <div class="panel panel-default">
+              <div class="panel-heading">表单数据<div style="float:right;cursor:pointer;" data-toggle="modal" data-target="#myModal"><i class="glyphicon glyphicon-question-sign"></i></div></div>
+        <div class="panel-body">
+        <form role="form" id="formID" action="/ment/addAdvertisement.do" method="post" enctype="multipart/form-data">
+         <div class="form-group" style="display: none;">
+          <label for="id">广告ID</label>
+          <input name="id" type="text" class="form-control" id="id" placeholder="id">
+          </div>
+          <div class="form-group">
+          <label for="name">广告名称</label>
+          <input name="name" type="text" class="form-control" id="name" placeholder="请输入广告名称">
+          </div>
+          <div class="form-group">
+          <label for="url">URL地址</label>
+          <input name="url" type="text" class="form-control" id="url" placeholder="URL">
+          </div>
+          <div class="form-group" style="display: none;">
+	          <input name="status" type="text" class="form-control" id="status" placeholder="id">
+          </div>
+          <div class="form-group">
+	          <label for="url">状态：</label>
+	          <div class="btn-group">
+	            <button id="statusButton" type="button" class="btn btn-primary">草稿</button>
+	            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	              <span class="caret"></span>
+	              <span class="sr-only">Toggle Dropdown</span>
+	            </button>
+	            <ul class="dropdown-menu" id="dropdown-menu">
+	              <li><a href="#"  onclick="status(this)">草稿</a></li>
+	              <li role="separator" class="divider"></li>
+	              <li><a href="#" onclick="status(this)">未审核</a></li>
+	            </ul>
+            </div>
+          </div>
+					
+         <div class="form-group" >
+          <label for="file">更新图片</label>
+          <input name="file" type="file" class="form-control col-xs-3" id="file" placeholder="图片">
+          </div>
+          <div class="form-group" >
+          
+          </div>
+          <button id="add" type="button" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> 增加广告</button>
+          <button id="resetButton" type="button" class="btn btn-danger"><i class="glyphicon glyphicon-refresh"></i> 取消</button>
+        </form>
+        </div>
+      </div>
+        </div>
+      </div>
+    </div>
+    <script src="/jquery/jquery-2.1.1.min.js"></script>
+    <script src="/bootstrap/js/bootstrap.min.js"></script>
+  <script src="/script/docs.min.js"></script>
+  <script src="/script/user.js"></script>
+    <script src="/script/utils.js"></script>
+  <script type="text/javascript" src="/jquery/layer/layer.js"></script>
+    <script type="text/javascript" src="/jquery/jquery-form.min.js"></script>
+     <script src="/jquery/jquery.form.js"></script>
+   <script type="text/javascript">
+   function status(obj) {
+	   var a = $(obj);
+	   var status = a.context.innerHTML;
+	   if (status == "草稿") {
+		   statusAction(0);
+    }else {
+    	statusAction(1);
+    }
+   }
+   function statusAction(status) {
+	     if (status == 0) {
+	       $("#status").val("草稿");
+	       document.getElementById('statusButton').innerHTML="草稿";
+	     }else {
+	       $("#status").val("未审核");
+	       document.getElementById('statusButton').innerHTML="未审核";
+	     }
+   }
+    var options = {  
+       beforeSubmit: function() {
+         start();
+       },  //提交前的回调函数  
+       success: function() {
+    	    layer.msg("数据添加成功！已经跳转", {time:1000, icon:6, shift:6});
+          stop_load("/advert.htm");
+       }, 
+       error: function() {
+    	     layer.msg("数据保存错误！", {time:1000, icon:5, shift:6});
+        },//提交后的回调函数  
+       //url: url,                 //默认是form的action， 如果申明，则会覆盖  
+       //type: type,               //默认是form的method（get or post），如果申明，则会覆盖  
+       //dataType: null,           //html(默认), xml, script, json...接受服务端返回的类型  
+       //clearForm: true,          //成功提交后，清除所有表单元素的值  
+       //resetForm: true,          //成功提交后，重置所有表单元素的值  
+       timeout: 3000               //限制请求的时间，当请求大于3秒后，跳出请求  
+    }  
+    $("#add").click(function() {//addform
+    	$("#formID").ajaxSubmit(options);
+    });;
+      </script>
+  </body>
+</html>

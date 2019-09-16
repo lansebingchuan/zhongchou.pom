@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	id="WebApp_ID" version="2.5">
+	<display-name>aisouji</display-name>
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<!--classpath*表示所有包下的 spring文件下面都会去扫描，不然就是本项目 -->
+		<param-value>classpath*:spring/spring-*.xml</param-value>
+	</context-param>
+	<!-- 监听器 -->
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+
+  <listener>
+    <listener-class>com.aisouji.listener.StartSystemListener</listener-class><!-- 监听，初始化JSP地址参数 -->
+  </listener>
+
+	<!-- 字符编码过滤器 -->
+	<filter>
+		<filter-name>encoding</filter-name>
+		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+		<init-param>
+			<param-name>forceEncoding</param-name>
+			<!-- 服务器响应的编码格式，true为utf-8 -->
+			<param-value>true</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>encoding</filter-name>
+		<url-pattern>/*</url-pattern>
+		<!-- //如果要过滤服务器内部转发的，那么就需要这么配置 <dispatcher>FORWARD</dispatcher> <dispatcher>REQUEST</dispatcher> -->
+	</filter-mapping>
+	<!--支持RESTFUL风格，可以将post请求，转换为PUT或者delete请求 ，隐含参数:"_method" -->
+	<filter>
+		<filter-name>HiddenHttpMethodFilter</filter-name>
+		<filter-class>org.springframework.web.filter.HiddenHttpMethodFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>HiddenHttpMethodFilter</filter-name>
+		<servlet-name>springmvc</servlet-name>
+	</filter-mapping>
+	<servlet>
+		<servlet-name>springmvc</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>classpath:spring/springmvc-context.xml</param-value>
+		</init-param>
+		<!-- 默认单例，启动的时候加载，加载顺序为一 -->
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>springmvc</servlet-name>
+		<!-- 这个servlet的匹配路径 -->
+		<!-- 精准匹配   大于  扩展匹配
+		<url-pattern>use/student.do</url-pattern> -->
+		<!-- 扩展匹配  大于 模糊匹配-->
+		<url-pattern>*.htm</url-pattern>
+		<url-pattern>*.do</url-pattern>
+    <!--模糊匹配 大于  默认匹配
+    <url-pattern>/*</url-pattern>-->
+    <!-- 默认匹配
+    <url-pattern>/</url-pattern>-->
+	</servlet-mapping>
+
+	<!-- session会话超时时间  ，默认30分钟-->
+	<session-config>
+		<session-timeout>60</session-timeout>
+	</session-config>
+
+	<welcome-file-list>
+		<welcome-file>index.jsp</welcome-file>
+	</welcome-file-list>
+	
+	<error-page>
+	 <error-code>404</error-code>
+	 <location>/error/404.html</location>
+	</error-page>
+</web-app>

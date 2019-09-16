@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+	<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/css/main.css">
+	
+	<style>
+	.tree li {
+        list-style-type: none;
+		cursor:pointer;
+	}
+	.back{
+	 display:block;
+	 background-color: blue;
+	 }
+	table tbody tr:nth-child(odd){background:#F4F4F4;}
+	table tbody td:nth-child(even){color:#C00;}
+	
+
+	
+	</style>
+<script src="/jquery/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="/script/user.js"></script>
+  </head>
+
+  <body>
+    <nav id="fixed-top" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <script type="text/javascript" src="/script/top.js"></script><!-- //加载TOP页面 -->
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+			<div class="tree" id="tree">
+			  <script type="text/javascript" src="/script/left.js"></script><!-- //加载left页面 -->
+			</div>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+			<div class="panel panel-default">
+			  <div class="panel-heading">
+				<h3 class="panel-title"><i class="glyphicon glyphicon-th"></i> 数据列表</h3>
+			  </div>
+ <div class="panel-body">
+	<form class="form-inline" role="form" style="float:left;">
+	  <div class="form-group has-feedback">
+	    <div class="input-group">
+	      <div class="input-group-addon">查询条件</div>
+	      <input id="queryText" class="form-control has-success" type="text" placeholder="请输入查询条件">
+	    </div>
+	  </div>
+	  <button type="button" id="queryButton" class="btn btn-warning"><i class="glyphicon glyphicon-search"></i> 查询</button>
+	</form>
+	<button id="deleteAll" type="button" class="btn btn-danger" style="float:right;margin-left:10px;"><i class=" glyphicon glyphicon-remove"></i> 删除</button>
+	<button id="newadd" type="button" class="btn btn-primary" style="float:right;" onclick="window.location.href='/user/newadd.htm'"><i class="glyphicon glyphicon-plus"></i> 新增</button>
+	<button id="fanxuan" type="button" class="btn btn-primary" style="float:right;margin-right:10px;" ><i class="glyphicon glyphicon-refresh"></i> 反选</button>
+	 <br>
+ <hr style="clear:both;">
+          <div class="table-responsive">
+            <table class="table  table-bordered">
+              <thead>
+                <tr >
+                  <th width="30">#</th>
+				  <th width="30"><input id="selectAll" type="checkbox"></th>
+                  <th>账号</th>
+                  <th>名称</th>
+                  <th>邮箱地址</th>
+                  <th width="100">操作</th>
+                </tr>
+              </thead>
+              
+              <tbody id="pageUser">
+              </tbody>
+			  <tfoot>
+			     <tr >
+				     <td colspan="6" align="center">
+						<ul class="pagination" id="parentPotion" >
+								<li  id="pagination" ><a onclick='pointPageUp()'>上一页</a></li>
+				<!-- 				<li class="active"><a href="#">1 <span class="sr-only">(current)</span></a></li>
+								<li><a href="#">2</a></li>
+								<li><a href="#">3</a></li>
+								<li><a href="#">4</a></li>
+								<li><a href="#">5</a></li> -->
+								<li id="pageDownPotion" class="nextPage"><a onclick='pointPageDwon()'>下一页</a></li>
+						</ul>
+					 </td>
+				 </tr>
+
+			  </tfoot>
+            </table>
+          </div>
+			  </div>
+			</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/jquery/jquery-2.1.1.min.js"></script>
+    <script src="/bootstrap/js/bootstrap.min.js"></script>
+     <script src="/script/docs.min.js"></script>
+    <script type="text/javascript" src="/jquery/layer/layer.js"></script>
+    <script type="text/javascript">//分页JS
+          var totalPage  = 0;
+          var pageUser = $("#pageUser");
+          var pageone = $("#pagination");
+          var pageDownPotion = $("#pageDownPotion");
+          var num = 0 ;//当前页面
+          var data = {"pagePoint": 1 ,"pageSize": 4};
+          var deleteid = false; 
+          var checks ; //所有的复选框
+         function init(a) {//根据第几页加载数据
+             if (!a) {
+            	   a=1;
+            	}
+             if ($.trim(data.queryText) == "") {//为空表示查询全部
+            	 
+            	}else {
+            		 if (num == a && $.trim(data.queryText) == "") {//如果在当前页
+            			 if (!deleteid) {
+            				 return;
+						        }                       
+                  }
+            	}
+            
+             console.log("查询："+data.queryText);
+             num = a;
+             data.pagePoint = num;
+             removes(pageUser , pageone);
+             var url = "/user/weifuuser.do";
+             var index = -1 ;
+             $.ajax({
+            	 type: "GET",
+               data: data,//传输的数据
+               url :  url,
+               beforeSend: function() {
+                 index = layer.load(2, {time: 10*1000});
+                 return true;
+                 },
+               success: function(result) {
+            	     layer.close(index);
+            	     if (!deleteid) {
+            	    	 layer.msg("查询成功！",{time:1000, icon:6, shift:6});
+            	     }
+            	     deleteid = false;
+		                 totalPage = result.totalPage;
+		                 var lists = result.lists;
+		                  if (lists.length > 0) {
+		                    lists.forEach(userFunction);/* 添加user数据 */
+		                } 
+		                 TotalPage();//添加页的位置数
+		                 checks = $("tbody tr td input[type=checkbox]");//位置填加完毕之后，对复选框的监听器，做注册，如果在其他地方做，那么可能页面没有加载完毕，无法完成监听
+		             },
+		             error: function() {
+		            	 layer.close(index);
+		            	 layer.msg("查询失败！",{time:1000, icon:5, shift:6});
+		            }
+             });
+            /*  $.getJSON(url, {"pagePoint": num ,"pageSize": 4}, function(result){
+            	 console.log(result);
+            	 totalPage = result.totalPage;
+               var lists = result.lists;
+                if (lists.length > 0) {
+                  lists.forEach(userFunction);// 添加user数据 
+                } 
+                TotalPage();//添加页的位置数
+             }
+         ); */
+         }
+         function removes(pageUser , pageone) {//移除之前的list集合
+        	  pageUser.empty();//删除所有的管理员
+             $("#parentPotion li").filter(".li").remove();//移除所有的下一页
+          }
+       function TotalPage(){//显示添加页码 的索引
+                for (i = totalPage; i >= 1; i--) { 
+                      var li 
+                      if(i == num){
+                          li = $("<li class='active li'></li>")
+                      }else {
+                        li = $("<li  class='li'></li>")
+                     }
+                      var a = $("<a onclick='pointPage(this)' ><span class='sr-only'>(current)</span></a>");
+                      a.text(i);
+                      li.append(a);//添加一个子元素
+                      pageone.after(li);//之后添加
+                  }
+              }
+       function pointPage(a) {//通过点击查询第几页
+    	  var num = $(a).text();
+    	  if (num == 1) {
+              pageDownPotion.removeClass("disabled");
+              pageone.addClass("disabled");
+        }
+    	  if (num == totalPage) {
+    		  pageone.removeClass("disabled");
+    		  pageDownPotion.addClass("disabled");
+        }
+    	   init(num); //获取当前 a 标签的值
+         }
+     function pointPageUp() {//向上翻页
+    	 if (num == 1) {
+    		  return;
+				}else {
+					var numUp= --num;
+					if (numUp == 1) {//下一个为1 不能用
+			       pageone.addClass("disabled");
+			     }
+					if (numUp <= totalPage) {
+						pageDownPotion.removeClass("disabled");
+					}
+          num++;
+          init(numUp); //获取当前 a 标签的值
+				}
+    	}
+     function pointPageDwon() {//向下翻页 class="disabled"
+    	  if (num == totalPage) {
+    		     return;
+    		  }else {
+    			  var numDown= ++num;
+    			  if (numDown == totalPage) {//满了不能用
+    				  pageDownPotion.addClass("disabled");
+    		     }
+    			  if (numDown >= 2) {
+    				  pageone.removeClass("disabled");
+    				}
+    			  num--;
+    	      init(numDown); //获取当前 a 标签的值
+    			}
+      }
+      function userFunction(value, index) {//把集合里面的数据渲染到页面
+            var tr=$("<tr></tr>"); 
+            var td=$("<td ></td>");
+            var td0=$("<td><input onclick='checkbox()' type='checkbox' id="+value.id+" name="+value.username+" ></td>");
+            var td1=$("<td></td>");
+            var td2=$("<td></td>");
+            var td3=$("<td></td>");
+            var deletetext =value.id+","+'"'+value.username+'"';
+            var td4=$("<td><button type='button' onclick='userRole("+value.id+")' class='btn btn-success btn-xs'><i class=' glyphicon glyphicon-check'></i>"+
+            "</button><button onclick='updateUser("+value.id+")' type='button' class='btn btn-primary btn-xs'><i class=' glyphicon glyphicon-pencil'></i></button>"+
+            "<button onclick='shanchuid("+deletetext+")' type='button' class='btn btn-danger btn-xs'><i class=' glyphicon glyphicon-remove'></i></button></td>");
+            td.text(index);//设置内容的值
+            td1.text(value.loginacct);
+            td2.text(value.username);
+            td3.text(value.email);
+            tr.append(td , td0 , td1 ,td2 , td3 , td4);
+            pageUser.append(tr);
+       }
+      function userRole(id) {//更改用户权限
+    	   start();
+    	   $.post("/user/userRole.do" , {"id": id} , function(result) {
+    		   if (result) {
+    			   stop_load("/user/assignRole.htm");//进入这个页面
+    			   }else {
+    				   layer.msg("获取参数失败！",{time:1000, icon:5, shift:6});
+				    }
+    		  });
+    	  }
+      function checkbox() {//解决方法，在每个复选框上固定一个点击事件
+            var boo=true;
+           //为每一个复选框注册点击事件
+            checks.each(function(n , value) {//checks：所有的复选框，在完成加载的时候得到
+                         if (!value.checked) {
+                           boo=false;
+                           return false;
+                       }
+                });
+             $("#selectAll").prop("checked" , boo);
+       }
+      
+      $("#selectAll").click(function() {//选择所有用户
+    	  var flage = this.checked
+    	  checks.each(function() {
+				    this.checked = flage;
+			  });
+	    });
+      $("#fanxuan").click(function() {
+    	    var iffan = false;var bexuan = true;
+    	    checks.each(function(n , value) {//checks：所有的复选框，在完成加载的时候得到
+                if (value.checked) {
+                	iffan=true;
+                }
+          });
+    	    checks.each(function(n , value) {//checks：所有的复选框，在完成加载的时候得到
+                if (!value.checked) {
+                	bexuan=false;
+                	return false;
+                }
+          });
+    	    if (iffan) {//为真表示有被选
+    	    	if (bexuan) {
+    	    		checks.each(function() {//checks：所有的复选框，在完成加载的时候得到
+    	              this.checked = false;
+    	          });
+    	    		$("#selectAll").removeAttr("checked" , false);
+    	      }else {
+    	    	  checks.each(function(n , value) {//checks：所有的复选框，在完成加载的时候得到
+    	                if (value.checked) {
+    	                  value.checked = false;
+    	                }else {
+    	                  value.checked = true;
+    	                }
+    	            });
+			       }
+    	    }else {//没有一个被选
+    	    	checks.each(function() {
+    	            this.checked = true;
+    	      });
+    	    	$("#selectAll").prop("checked" , true);
+    	    }
+       });
+       $("#deleteAll").click(function() {//点击批量选择删除
+    	   var ids = "";
+       //方法一
+    	  /*  checks.each(function(n , value) {//方法一，得到数据，是以字符串对象得到
+               if (value.checked) {
+            	   if (n != 0) {//是否被选中
+                       ids += "&";
+                     }
+                     ids += "id=" + value.id;
+            	}
+         }); */
+       //方法二
+       var userlist = {};//空的JSON对象,里面封装data数组，进行多条数据传输，每条数据是一个实体对象
+    	  checks.each(function(n , value) {//方法一，得到数据，是以JSON对象
+            if (value.checked) {
+            	/* userlist["userlist[0].id"] = value.id; */
+            	userlist["userlist["+n+"].id"] = value.id;
+            	userlist["userlist["+n+"].username"] = value.name;
+           }
+         });
+        console.log(userlist);
+    	   //发送请求
+    	   if (JSON.stringify(userlist) == "{}") {
+    		   layer.msg("请选择需要删除的用户！",{time:1000, icon:5, shift:6});
+    		   return;
+    		  }
+    	   layer.confirm("确认删除？",  {icon: 2, title:'警告'}, function(cindex){//询问是否删除
+    	          layer.close(cindex);
+    	          /* $.post("/user/deleteUsers.do" , ids , function(result) { *///以字符串的形式封装传输
+    	        	  $.post("/user/deleteUserList.do" , userlist , function(result) { //以JSON对象数组方式封装传输
+    	        	      if (result) {
+    	        	    	  layer.msg("成功 删除！",{time:1000, icon:6, shift:6});
+    	        	    	  deleteid= true;//用于表示是否显示查询成功
+    	        	    	  if (num == 2) {//如果剩余两页，那么跳转到第一页
+    	        	    		  init(1);
+    	        	    		 }else {//否则调转到相关页面
+    	        	    			 init(num);
+    	        	    			}
+    	        	    	}else {
+    	        	    		layer.msg("删除失败！",{time:1000, icon:5, shift:6});
+    	        	    		}
+    	        	  });
+    	      }, function(cindex){//取消
+    	          layer.close(cindex);
+    	          return;
+    	      });
+    	 });
+       
+      function shanchuid(id,username) {//，单个id删除    deleteid不能用这个关键字
+    	  layer.confirm("是否删除_"+username+"_用户",  {icon: 3, title:'提示'}, function(cindex){    
+    		  layer.close(cindex);//确认区域
+	 		     $.post(
+	 		             "/user/deleteUser.do?id="+id , 
+	 		             function(result) {
+	 		               if (result) {
+	 		                 deleteid = true;
+	 		                 layer.msg("成功删除！",{time:1000, icon:6, shift:6});
+	 		                 init(num);//成功删除之后加载当前页的数据
+	 		               }else {
+	 		                 layer.msg("删除失败！",{time:1000, icon:5, shift:6});
+	 		               }
+	 		             }
+	 		      );
+          },function(cindex){//否定区域
+             layer.close(cindex);
+              //取消就返回
+      });
+  
+    	}
+      function updateUser(num) {//跟新修改user
+    	  start();
+    	  $.post("/user/upDateUserSession.do?id="+num, function () {
+    		  stop_load("/user/update.htm");
+		     });
+    	  }
+      $("#queryButton").click(function() {//条件查询
+    	  var queryText = $("#queryText").val();
+    	  data.queryText = queryText;//增加设置条件查询的值为
+    	  pageDownPotion.removeClass("disabled");
+    	  console.log(data.queryText);
+    	  init();//进行查询
+    	 });
+   </script>
+    <script type="text/javascript">
+        $(document).ready(init());//进行页面数据的加载
+    </script>
+  </body>
+</html>

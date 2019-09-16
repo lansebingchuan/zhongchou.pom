@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+	<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/css/main.css">
+	<link rel="stylesheet" href="/css/doc.min.css">
+	<style>
+	.tree li {
+        list-style-type: none;
+		cursor:pointer;
+	}
+	 .int{ height: 30px; text-align: left; width: 600px; }
+     .high{ color: red; }
+     .msg{ font-size: 13px; }
+     .onError{ color: red; }
+     .onSuccess{ color: green; }
+	</style>
+	<script src="/jquery/jquery-2.1.1.min.js"></script>
+	<script type="text/javascript" src="/script/user.js"></script>
+  </head>
+
+  <body>
+
+     <nav id="fixed-top" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <script type="text/javascript" src="/script/top.js"></script><!-- //加载TOP页面 -->
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+			<div class="tree" id="tree">
+				 <script type="text/javascript" src="/script/left.js"></script><!-- //加载left页面 -->
+			</div>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+				<ol class="breadcrumb">
+				  <li><a href="#">首页</a></li>
+				  <li><a href="#">数据列表</a></li>
+				  <li class="active">新增</li>
+				</ol>
+			<div class="panel panel-default">
+			<form role="form" id="addform">
+       <div class="panel-heading">表单数据<div style="float:right;cursor:pointer;" data-toggle="modal" data-target="#myModal"><i class="glyphicon glyphicon-question-sign"></i></div></div>
+			  <div class="panel-body">
+				  <div class="form-group">
+					<label for="name">许可名称</label>
+					<input name="name" type="text" class="form-control" id="name" placeholder="请输入许可名称">
+				  </div>
+				  <div class="form-group">
+					<label for="url">许可地址</label>
+					<input name="url" type="text" class="form-control" id="url" placeholder="请输入许可地址">
+					<p class="help-block label label-warning">请输入许可地址</p>
+				  </div>
+				  <div class="form-group">
+
+				  <input type="text" name="icon" id="icon" style="display: none;" />
+          <label for="open">许可状态：</label>
+            <select name="open" id="open">
+              <option value="false" selected="selected">关闭</option>
+              <option value="true">打开</option>
+            </select>
+          </div>
+          <div class="form-group">
+          <label for="icon">许可图标：</label>
+      <div class="btn btn-default dropdown-toggle" style="position:relative;">
+		    <button type="button" class="btn dropdown-toggle" id="dropdownMenu1" 
+		            data-toggle="dropdown">
+                选择图标
+		          <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" id="menu" role="menu" aria-labelledby="dropdownMenu1">
+              
+          </ul>
+      </div>
+          </div>
+          
+				  <button id="permissionadd" type="button" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> 新增</button>
+				  <button id="resetButton" type="button" class="btn btn-danger"><i class="glyphicon glyphicon-refresh"></i> 重置</button>
+				</form>
+			  </div>
+			</div>
+        </div>
+      </div>
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				<h4 class="modal-title" id="myModalLabel">帮助</h4>
+		  </div>
+		  <div class="modal-body">
+			<div class="bs-callout bs-callout-info">
+				<h4>测试标题1</h4>
+				<p>测试内容1，测试内容1，测试内容1，测试内容1，测试内容1，测试内容1</p>
+			  </div>
+			<div class="bs-callout bs-callout-info">
+				<h4>测试标题2</h4>
+				<p>测试内容2，测试内容2，测试内容2，测试内容2，测试内容2，测试内容2</p>
+			  </div>
+		  </div>
+		  <!--
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+			<button type="button" class="btn btn-primary">Save changes</button>
+		  </div>
+		  -->
+		</div>
+	  </div>
+	</div>
+    <script src="/jquery/jquery-2.1.1.min.js"></script>
+    <script src="/bootstrap/js/bootstrap.min.js"></script>
+	<script src="/script/docs.min.js"></script>
+	<script src="/script/user.js"></script>
+	    <script type="text/javascript" src="/jquery/layer/layer.js"></script>
+	 <script type="text/javascript">
+	 $(initPermission());//初始化许可数据
+	 $(initIcon());//初始化许可图标
+	 function initIcon() {
+		 $.post("/user/Permission/getIcon.do" , function(result) {
+			 if (result.flage) {
+				 var icons = $("#menu");
+				 var listIcon = result.listString;
+				 var hight = 10;
+				 var jian = 1;
+				 for (var i = 0; i < listIcon.length; i++) {
+					 var icon = listIcon[i];
+					  if (i == 0) {
+						var  icon = '<div class="'+icon+'" style="position:absolute;top:'+hight+'px;margin-left:3px; border:1px solid gainsboro ;width:20px;height:20px;"></div>'+
+				           '<li role="presentation" style="margin-left: 15px;"><a onclick="addIcon(this)"  role="menuitem"  href="javascript:void(0)">'+icon+'</a></li>';
+				           icons.append(icon);
+					  }else {
+						   hight -= 4;  
+						  var  icon = '<div class="'+icon+'" style="position:absolute;top:'+hight+'px;margin-left:3px; border:1px solid gainsboro ;width:20px;height:20px;"></div>'+
+		                   '<li  role="presentation" style="margin-left: 15px;"><a onclick="addIcon(this)" role="menuitem"  href="javascript:void(0)">'+icon+'</a></li>';
+		          icons.append(icon);
+					  }
+					 hight += 30;
+				
+				 }
+			}else {
+	        layer.msg(result.message, {time:1500, icon:5, shift:6});
+         }
+		  }
+		 );
+	 }
+	 function addIcon(obj) {//<div style="margin-left: 10px;" class="glyphicon glyphicon-dashboard"></div>
+		 var botton=$("#dropdownMenu1");
+	 var div=  botton.siblings("div");;
+		if (div.length != 0) {
+			div.remove();
+		}
+		var text = $(obj).text();
+	 var div='<div style="margin-left: 10px;" class="'+ text+'"></div>';
+	 $("#icon").val(text);
+	 botton.after(div);
+	 botton[0].innerText = text;
+	  }
+	 function initPermission() {
+		    $.post("/user/Permission/permissionadd.do" , function(result) {
+		         if (result.flage) {
+		          var obj = result.object;
+		          $("#name").val(obj.name);
+		          $("#url").val(obj.url);
+		          var options = $("#open option");
+		          if (obj.open) {
+		            options[1].selected = true;
+		          }else {
+		            options[0].selected = false;
+		            }
+		         }else {
+		        	 layer.msg(result.message, {time:1500, icon:5, shift:6});
+		        	  }
+		    });
+	  }
+	  $("#resetButton").click(function() {
+		   initPermission();//重置按钮的点击事件，点击了那么清空表单
+		});
+	    $("#permissionadd").click(function() {//addform
+	    	start();
+	    	$.get("/user/Permission/addpermission.do", $("#addform").serialize(),function(data){
+          if (data.flage == true) {
+        	  layer.msg("新增成功！", {time:1000, icon:6, shift:6});
+            stop_load("/user/permission.htm");
+          }else {
+        	  layer.msg("新增失败！", {time:1000, icon:5, shift:6});
+        	   }
+        }).error(function() { 
+            /*         alert("登录错误，许可名或者密码错误"); *//* 弹窗组件 */
+            layer.msg("新增失败！", {time:1000, icon:5, shift:6});
+         });
+	    });
+	    </script>
+  </body>
+</html>
